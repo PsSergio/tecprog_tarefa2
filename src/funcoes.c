@@ -10,7 +10,10 @@ static Func* criar_func(char var, char* rel, char* exp){
 
     Func *f = malloc(sizeof *f);
 
-    if(f == NULL) return NULL;
+    if(f == NULL) {
+        printf("erro criar func");
+        return NULL;
+    }
 
     f->var = var;
     f->rel = rel;
@@ -29,7 +32,8 @@ static int adicionar_filho(Func *f, Func *child){
     Func **tempChildren = realloc(currentChildren, tamanho_vetor+1);
 
     if(tempChildren == NULL){
-        free(tempChildren);
+        // free(currentChildren);
+        printf("erro adicionar filho");
         return 1;
     }
 
@@ -54,7 +58,11 @@ static void printFunc(Func *f){
         printf("%c", f->rel[i]);
     }
 
-    printf("\nnc: %d\n", f->num_children);
+    printf("\nnc: %d\n--------------\n", f->num_children);
+
+    for(int i = 0; i < f->num_children; i++){
+        printFunc(f->children[i]);
+    }
 }
 
 
@@ -67,7 +75,17 @@ Func* mapear_func(const char *expr){
 }
 
 void liberar_func(Func *f){
-    return;
+
+    if(f == NULL) return;
+    
+    for(int i = 0; i < f->num_children; i++){
+        liberar_func(f->children[i]);
+    }
+
+    free(f->children);
+
+    free(f);
+
 }
 Func* simplificar_func(const Func *f){
     return NULL;
@@ -89,6 +107,8 @@ int main(){
 
     Func *f = criar_func(var, &rel, &exp);
 
+    if(f == NULL) return 1;
+
     printFunc(f);
 
     char exp2[9] = "Teste 12";
@@ -96,12 +116,19 @@ int main(){
     char var2 = 'x';
 
     Func *c = criar_func(var2, &rel2, &exp2);
+
+    if(c == NULL) return 1;
+
     int r = adicionar_filho(f, c);
 
     if(r == 1) return 1;
 
     printFunc(f);
-    printFunc(f->children[0]);
+    // printFunc(f->children[0]);
+
+    // printf("\n%p\n%p\n\n", f, c);
+
+    liberar_func(f);
 
     return 0;
 }
