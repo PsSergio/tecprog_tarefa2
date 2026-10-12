@@ -1,9 +1,13 @@
 #ifndef FUNCOES_H
 #define FUNCOES_H
 
-typedef struct {
+typedef struct Func {
 
-    char expr[1000]; // incompleto
+    struct Func **children;
+    int num_children;
+    char *rel;
+    char *exp;
+    char var;
 
 } Func; 
 
