@@ -11,7 +11,7 @@ typedef struct Func {
 
 } Func; 
 
-Func* mapear_func(const char *expr);
+Func* mapear_func(const char *expr, char var);
 void liberar_func(Func *f);
 Func* simplificar_func(const Func *f);
 double avaliar_func(const Func *f, double x);
