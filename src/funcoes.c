@@ -136,6 +136,11 @@ static void retirar_parenteses(Func *f){
 
 }
 
+/*
+ @brief Busca grupos de expressões matemáticas seguindo as regras de associatividade e os adiciona em uma Func raiz
+ @param f estrutura Func a qual vai ser adicionado os filhos, também de estrutura Func
+ @note ao final da função, é esperado que f->children tenha sido preenchido completamente de forma recursiva
+*/
 static void encontrar_filhos(Func *f){
 
     if(f == NULL) return;
@@ -228,6 +233,13 @@ static void encontrar_filhos(Func *f){
 FUNÇÕES PÚBLICAS
 */
 
+/* 
+ @brief Mapeia uma expressão matemática, recebida como string, para uma estrutura Func
+ @param expr Expressão matemática a ser mapeada
+ @param var um character que representa a incógnita da equação
+ @return Retorna a estrutura Func raiz da equação. Esta possui no máximo dois filhos, também de estrutura Func.
+ @note O retorno deve ser liberado da Heap pela função liberar_func após uso
+*/
 Func* mapear_func(const char *expr, char var){
 
     Func *f = criar_func(var, expr);
@@ -238,6 +250,10 @@ Func* mapear_func(const char *expr, char var){
 
 }
 
+/*
+ @brief Libeara da Heap uma estrutura Func e todos seus filhos de forma recursiva
+ @param f estrutura Func a ser liberada da memória
+*/
 void liberar_func(Func *f){
 
     if(f == NULL) return;
@@ -284,7 +300,7 @@ FUNÇÃO MAIN - TESTE
 int main(){
     
     // char *expr = alocar_string("(2*x+3*sen(x+2))*(4*x*2)");
-    char *expr = alocar_string("(2*x+3*sen(cos(x+2)))+(4*x*2)");
+    char *expr = alocar_string("(sen(x)+3)/(cos(x)+5*x)");
     // char *expr = alocar_string("(4*x*2)");
 
     Func *f = mapear_func(expr, 'x');
