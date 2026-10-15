@@ -21,6 +21,8 @@ enum RelationType identificar_rel(char *rel){
         return MULT;
     case '/':
         return DIV;
+    case '^':
+        return POT;
     default:
         break;
     }
@@ -49,6 +51,9 @@ void print_rel(enum RelationType rel){
     case DIV:
         printf("/");
         break;
+    case POT:
+        printf("^");
+        break;
     case SEN:
         printf("sen");
         break;
@@ -63,4 +68,3 @@ void print_rel(enum RelationType rel){
         break;
     }
 }
-

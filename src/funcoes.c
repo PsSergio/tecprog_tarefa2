@@ -2,7 +2,8 @@
 #include "../include/relacoes.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <stdio.h>
+#include <stdbool.h>
 /* 
 FUNÇÕES INTERNAS
 */
@@ -153,6 +154,7 @@ static void encontrar_filhos(Func *f){
     int rel_1 = -1;
     int rel_2 = -1;
     int rel_3 = -1;
+    int rel_4 = -1;
     
     char *expr = f->exp;
 
@@ -174,11 +176,12 @@ static void encontrar_filhos(Func *f){
 
         if( ( expr[i] == '*' || expr[i] == '/' ) && rel_2 == -1) rel_2 = i;
 
+        if ( expr[i] == '^' && rel_4 == -1 && rel_2 == -1) rel_4 = i; 
+
         if( i-2 >= 0 ){
             if(expr[i-2] != 's' && expr[i-2] != 'c' && expr[i-2] != 't') continue;
 
             rel_tri[0] = expr[i-2]; rel_tri[1] = expr[i-1]; rel_tri[2] = expr[i];
-            printf("\n\n%c%c%c\n\n", rel_tri[0], rel_tri[1], rel_tri[2]);
             enum RelationType relt = identificar_rel(rel_tri);
             if(relt == SEN || relt == COS || relt == TAN){
                 rel_3 = i-2;
@@ -186,9 +189,7 @@ static void encontrar_filhos(Func *f){
             // char *rel = expr[i-2] + expr[i-1] + expr[i];
             
         }
-
     }
-
     int i = -1;
     if( rel_1 != -1 ) i = rel_1;
     else if( rel_2 != -1) i = rel_2;
@@ -207,6 +208,7 @@ static void encontrar_filhos(Func *f){
         encontrar_filhos(c_l);
         return;
     }
+    else if ( rel_4 != -1) i = rel_4;
     else return;
 
     free(rel_tri);
@@ -226,7 +228,7 @@ static void encontrar_filhos(Func *f){
     
     encontrar_filhos(c_l);
     encontrar_filhos(c_r);
-
+    
 }   
 
 /* 
@@ -278,7 +280,6 @@ double avaliar_func(const Func *f, double x){
     return 0;
 }
 
-
 static char* alocar_string(char *expr){
 
     int i = 0;
@@ -300,14 +301,15 @@ FUNÇÃO MAIN - TESTE
 int main(){
     
     // char *expr = alocar_string("(2*x+3*sen(x+2))*(4*x*2)");
-    char *expr = alocar_string("(sen(x)+3)/(cos(x)+5*x)");
+    char *expr = alocar_string("(sen(x)+3)/((cosx)^3+5*x)");
+
     // char *expr = alocar_string("(4*x*2)");
 
     Func *f = mapear_func(expr, 'x');
     printf("\n");
 
     printFunc(f);
-
+    
     liberar_func(f);
 
     // Func *f = criar_func('x', expr);

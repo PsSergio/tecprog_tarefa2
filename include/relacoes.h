@@ -9,6 +9,7 @@ enum RelationType {
     SEN,
     COS,
     TAN,
+    POT,
     DESCONHECIDO
 };
 
