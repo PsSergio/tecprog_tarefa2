@@ -63,7 +63,7 @@ static void printFunc(Func *f){
 
     printf("\n");
 
-    printf("%d", f->rel);
+    print_rel(f->rel);
 
     printf("\nnc: %d\n--------------\n", f->num_children);
 
@@ -147,8 +147,11 @@ static void encontrar_filhos(Func *f){
 
     int rel_1 = -1;
     int rel_2 = -1;
+    int rel_3 = -1;
     
     char *expr = f->exp;
+
+    char *rel_tri = malloc(3*sizeof *rel_tri);
     
     for(tamanho_expr = 0; expr[tamanho_expr] != '\0'; tamanho_expr++);
 
@@ -166,14 +169,43 @@ static void encontrar_filhos(Func *f){
 
         if( ( expr[i] == '*' || expr[i] == '/' ) && rel_2 == -1) rel_2 = i;
 
+        if( i-2 >= 0 ){
+            if(expr[i-2] != 's' && expr[i-2] != 'c' && expr[i-2] != 't') continue;
+
+            rel_tri[0] = expr[i-2]; rel_tri[1] = expr[i-1]; rel_tri[2] = expr[i];
+            printf("\n\n%c%c%c\n\n", rel_tri[0], rel_tri[1], rel_tri[2]);
+            enum RelationType relt = identificar_rel(rel_tri);
+            if(relt == SEN || relt == COS || relt == TAN){
+                rel_3 = i-2;
+            }
+            // char *rel = expr[i-2] + expr[i-1] + expr[i];
+            
+        }
+
     }
 
     int i = -1;
     if( rel_1 != -1 ) i = rel_1;
     else if( rel_2 != -1) i = rel_2;
-    else return;
-    
+    else if( rel_3 != -1) {
 
+        i = rel_3;
+        char *c_exp_l = limitar_string(expr, i+3, tamanho_expr);
+
+        Func *c_l = criar_func(f->var, c_exp_l);
+        adicionar_filho(f, c_l);
+
+        enum RelationType rel = identificar_rel(rel_tri);
+        f->rel = rel;
+        f->num_rel = 1;
+    
+        encontrar_filhos(c_l);
+        return;
+    }
+    else return;
+
+    free(rel_tri);
+    
     char *c_exp_r = limitar_string(expr, i+1, tamanho_expr);
     char *c_exp_l = limitar_string(expr, 0, i);
     
@@ -252,7 +284,7 @@ FUNÇÃO MAIN - TESTE
 int main(){
     
     // char *expr = alocar_string("(2*x+3*sen(x+2))*(4*x*2)");
-    char *expr = alocar_string("(2*x+3*sen(x+2))+((4*x*2))");
+    char *expr = alocar_string("(2*x+3*sen(cos(x+2)))+(4*x*2)");
     // char *expr = alocar_string("(4*x*2)");
 
     Func *f = mapear_func(expr, 'x');

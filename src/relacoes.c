@@ -33,3 +33,34 @@ enum RelationType identificar_rel(char *rel){
     return DESCONHECIDO;
 };
 
+void print_rel(enum RelationType rel){
+
+    switch (rel)
+    {
+    case SOMA:
+        printf("+");
+        break;
+    case SUB:
+        printf("-");
+        break;
+    case MULT:
+        printf("*");
+        break;
+    case DIV:
+        printf("/");
+        break;
+    case SEN:
+        printf("sen");
+        break;
+    case COS:
+        printf("cos");
+        break;
+    case TAN:
+        printf("tan");
+        break;
+    default:
+        printf("desconhecido");
+        break;
+    }
+}
+

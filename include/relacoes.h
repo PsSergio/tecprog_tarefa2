@@ -13,5 +13,6 @@ enum RelationType {
 };
 
 enum RelationType identificar_rel(char *rel);
+void print_rel(enum RelationType rel);
 
 #endif
