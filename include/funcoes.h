@@ -1,13 +1,20 @@
 #ifndef FUNCOES_H
 #define FUNCOES_H
 
-typedef struct {
+#include "relacoes.h"
 
-    char expr[1000]; // incompleto
+typedef struct Func {
+
+    struct Func **children;
+    int num_children;
+    enum RelationType rel;
+    int num_rel;
+    char *exp;
+    char var;
 
 } Func; 
 
-Func* mapear_func(const char *expr);
+Func* mapear_func(const char *expr, char var);
 void liberar_func(Func *f);
 Func* simplificar_func(const Func *f);
 double avaliar_func(const Func *f, double x);
