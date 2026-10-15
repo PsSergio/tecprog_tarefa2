@@ -1,4 +1,5 @@
 #include "../include/funcoes.h"
+#include "../include/relacoes.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -16,7 +17,8 @@ static Func* criar_func(char var, char* exp){
     }
 
     f->var = var;
-    f->rel = NULL;
+    f->rel = DESCONHECIDO;
+    f->num_rel = 0;
     f->exp = exp;
     f->children = NULL;
     f->num_children = 0;
@@ -61,9 +63,7 @@ static void printFunc(Func *f){
 
     printf("\n");
 
-    for(int i = 0 ; f->rel[i] != '\0'; i++){
-        printf("%c", f->rel[i]);
-    }
+    printf("%d", f->rel);
 
     printf("\nnc: %d\n--------------\n", f->num_children);
 
@@ -72,68 +72,19 @@ static void printFunc(Func *f){
     }
 }
 
-/*
- @brief retorna os índices da string que contém parênteses
- @param expr expressão matemática em formato de string
- @return Vetor indices de índices dos parênteses, com indices[0] sendo o tamanho do vetor
- @pre expr != NULL
- @note a função não libera indices
-*/
-static int* verificar_parenteses(char *expr){
-
-    int aberto = 0;
-
-    int *indices = malloc(sizeof(*indices));
-
-    if(indices == NULL){
-        printf("erro ao alocar");
-        return NULL;
-    }
-    int tamanho_vetor = 1;
-    indices[0] = tamanho_vetor;
-    for(int i = 0; expr[i] != '\0'; i++){
-        if(expr[i] == '(' || expr[i] == ')'){
-
-            // vamos ignorar parenteses internos
-            if(expr[i] == '(') aberto++;
-            if(expr[i] == ')') aberto--;
-
-            if(expr[i] == '(' && aberto != 1) continue;
-            if(expr[i] == ')' && aberto != 0) continue;
-
-            int *vetorTemp = realloc(indices, (tamanho_vetor+1)*sizeof(*indices));
-            if(vetorTemp == NULL) {
-                printf("Erro ao realocar");
-                continue;
-            }
-
-            tamanho_vetor++;
-
-            indices = vetorTemp;
-            indices[tamanho_vetor-1] = i;
-
-        }
-    }
-
-    if(tamanho_vetor == 1) return NULL;
-    indices[0] = tamanho_vetor;
-    return indices;
-}
-
-
 /* 
- @brief limita uma string em um intervalo aberto (indice1, indice2)
+ @brief limita uma string em um intervalo fechado-aberto [indice1, indice2)
  @param expr string a ser limitada
- @param indice1 índice que representa o início do intervalo aberto
- @param indice2 índice que representa o fim do intervalo aberto
+ @param inicio índice que representa o início do intervalo fechado
+ @param fim índice que representa o fim do intervalo aberto
  @return retorna nova_expr, uma nova string limitada alocada na heap 
  @pre expr != NULL
- @pre (indice1, indice2) índices válidos
+ @pre [indice1, indice2) índices válidos
  @note essa função não libera a memória alocada da nova string
 */
-static char* limitar_string(char *expr, int indice1, int indice2){
+static char* limitar_string(char *expr, int inicio, int fim){
 
-    int tamanho_vetor = indice2-indice1; // por causa do \0 no final
+    int tamanho_vetor = fim-inicio; // por causa do \0 no final
 
     char *nova_expr = malloc(tamanho_vetor * sizeof *nova_expr);
 
@@ -143,7 +94,7 @@ static char* limitar_string(char *expr, int indice1, int indice2){
     }
 
     int c = 0;
-    for(int i = indice1+1; i < indice2; i++, c++){
+    for(int i = inicio; i < fim; i++, c++){
         nova_expr[c] = expr[i];
     }
 
@@ -151,35 +102,44 @@ static char* limitar_string(char *expr, int indice1, int indice2){
 
 }
 
-static char* adicionar_relacoes(char *expr, int *indices){
-    char *rel = malloc(sizeof(*rel));
+static void encontrar_filhos(Func *f){
+    // int *indices_filhos = verificar_parenteses(expr);
 
-    if(indices == NULL) return rel;
+    if(f == NULL) return;
+
+    int n = 0;
+    int tamanho_expr = 0;
     
-    int tamanho_rel = 0;
+    char *expr = f->exp;
+    for(tamanho_expr = 0; expr[tamanho_expr] != '\0'; tamanho_expr++);
 
-    int tamanho_ind = indices[0];
-
-    for(int i = 1; i < tamanho_ind; i+=2){
-
-        if(i >= tamanho_ind-1) break;
-
-        // printf(" %c ", expr[i+1]);
+    for(int i = tamanho_expr; i > 0; i--){ // percorre pela direita pela associatividade
         
-        char *relTemp = realloc(rel, (tamanho_rel+1)*sizeof(*rel));
-        if(relTemp == NULL) continue;
-        tamanho_rel++;
-
-        rel = relTemp;
-        rel[tamanho_rel-1] = expr[indices[i+1]+1];
+        if(expr[i] == ')') n--;
+        if(expr[i] == '(') n++;
         
+        if(n < 0) continue;
+
+        if(expr[i] == '+' || expr[i] == '-'){
+
+            char *c_exp_r = limitar_string(expr, i+1, tamanho_expr);
+            char *c_exp_l = limitar_string(expr, 0, i);
+
+            Func *c_r = criar_func(f->var, c_exp_r);
+            Func *c_l = criar_func(f->var, c_exp_l);
+
+            adicionar_filho(f, c_l);
+            adicionar_filho(f, c_r);
+
+            enum RelationType rel = identificar_rel(&expr[i]);
+
+            f->rel = rel;
+            f->num_rel = 1;
+
+            return;
+        }
     }
-
-    if(tamanho_rel == 0) return NULL;
-    return rel;
-
 }
-
 
 /* 
 FUNÇÕES PÚBLICAS
@@ -189,25 +149,10 @@ Func* mapear_func(const char *expr, char var){
 
     Func *f = criar_func(var, expr);
 
-    if(f == NULL) return NULL;
+    encontrar_filhos(f);
 
-    int *indices = verificar_parenteses(expr);
-    char *rel = adicionar_relacoes(expr, indices);
-    f->rel = rel;
-    if(indices == NULL) return f;
-
-    int tamanho_vetor = indices[0];
-
-
-    for(int i = 1; i < tamanho_vetor; i+=2){
-        printf("%c %c", expr[indices[i]], expr[indices[i+1]]);
-        char *c = limitar_string(expr, indices[i], indices[i+1]);
-        Func *child = mapear_func(c, var);
-        if(child == NULL){
-            break;
-        }
-
-        adicionar_filho(f, child);
+    for(int i = 0; i < f->num_children; i++){
+        encontrar_filhos(f->children[i]);
     }
 
     return f;
@@ -222,7 +167,7 @@ void liberar_func(Func *f){
         liberar_func(f->children[i]);
     }
 
-    free(f->rel);
+    free(f->exp);
 
     free(f->children);
 
@@ -239,20 +184,38 @@ double avaliar_func(const Func *f, double x){
 }
 
 
+static char* alocar_string(char *expr){
+
+    int i = 0;
+    for(i = 0; expr[i] != '\0'; i++);
+    char *new_expr = malloc(i* sizeof *new_expr);
+
+    for(int j = 0; expr[j] != '\0'; j++){
+        new_expr[j] = expr[j];
+    }
+
+    return new_expr;
+
+}
+
 /* 
 FUNÇÃO MAIN - TESTE
 */
 
 int main(){
     
-    char exp[22] = "(2x+3sen(x+2))/(4x+2)";
+    char *expr = alocar_string("(2x+3sen(x+2))+4x+2");
 
-    // Func *f = mapear_func("(2x+3sen(x+2))*(4x+2)", 'x');
-    Func *f = mapear_func("(((2)*(x))+((3)*(sen(x+2))))*(((4)*(x))+(2))", 'x');
+    Func *f = mapear_func(expr, 'x');
+    // Func *f = mapear_func("(((2)*(x))+((3)*(sen(x+2))))*(((4)*(x))+(2))", 'x');
     printf("\n");
 
     printFunc(f);
 
     liberar_func(f);
+
+    // enum RelationType type = identificar_rel("+");
+
+    // printf("%d", type);
 
 }

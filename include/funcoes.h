@@ -1,11 +1,14 @@
 #ifndef FUNCOES_H
 #define FUNCOES_H
 
+#include "relacoes.h"
+
 typedef struct Func {
 
     struct Func **children;
     int num_children;
-    char *rel;
+    enum RelationType rel;
+    int num_rel;
     char *exp;
     char var;
 
