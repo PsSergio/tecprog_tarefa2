@@ -90,6 +90,7 @@ static char* limitar_string(char *expr, int inicio, int fim){
 
     if(nova_expr == NULL){
         printf("erro ao alocar");
+        printf("%d", tamanho_vetor);
         return NULL;
     }
 
@@ -102,15 +103,53 @@ static char* limitar_string(char *expr, int inicio, int fim){
 
 }
 
+static void retirar_parenteses(Func *f){
+    char *expr = f->exp;
+    int n = 0, i = 0;
+    int quant_p = 0;
+
+    if(expr[0] != '(') return;
+
+    for(i = 0; expr[i] != '\0'; i++){
+        
+        if(expr[i] == '(') n++;
+        if(expr[i] == ')') {
+            if(n == 1) quant_p++;
+            n--;
+        }
+
+        if(n < 0) continue;
+        
+    }
+
+    if(quant_p == 1){
+
+        if(expr[0] == '(' && expr[i-1] == ')'){
+            char *new_expr = limitar_string(expr, 1, i-1);
+            free(expr);
+            f->exp = new_expr;
+            retirar_parenteses(f); // caso haja casos como: ((...))
+            return;
+        }
+
+    }
+
+}
+
 static void encontrar_filhos(Func *f){
-    // int *indices_filhos = verificar_parenteses(expr);
 
     if(f == NULL) return;
 
+    retirar_parenteses(f);
+
     int n = 0;
     int tamanho_expr = 0;
+
+    int rel_1 = -1;
+    int rel_2 = -1;
     
     char *expr = f->exp;
+    
     for(tamanho_expr = 0; expr[tamanho_expr] != '\0'; tamanho_expr++);
 
     for(int i = tamanho_expr; i > 0; i--){ // percorre pela direita pela associatividade
@@ -120,26 +159,38 @@ static void encontrar_filhos(Func *f){
         
         if(n < 0) continue;
 
-        if(expr[i] == '+' || expr[i] == '-'){
-
-            char *c_exp_r = limitar_string(expr, i+1, tamanho_expr);
-            char *c_exp_l = limitar_string(expr, 0, i);
-
-            Func *c_r = criar_func(f->var, c_exp_r);
-            Func *c_l = criar_func(f->var, c_exp_l);
-
-            adicionar_filho(f, c_l);
-            adicionar_filho(f, c_r);
-
-            enum RelationType rel = identificar_rel(&expr[i]);
-
-            f->rel = rel;
-            f->num_rel = 1;
-
-            return;
+        if( expr[i] == '+' || expr[i] == '-' ) {
+            rel_1 = i; 
+            break;
         }
+
+        if( ( expr[i] == '*' || expr[i] == '/' ) && rel_2 == -1) rel_2 = i;
+
     }
-}
+
+    int i = -1;
+    if( rel_1 != -1 ) i = rel_1;
+    else if( rel_2 != -1) i = rel_2;
+    else return;
+    
+
+    char *c_exp_r = limitar_string(expr, i+1, tamanho_expr);
+    char *c_exp_l = limitar_string(expr, 0, i);
+    
+    Func *c_r = criar_func(f->var, c_exp_r);
+    Func *c_l = criar_func(f->var, c_exp_l);
+    
+    adicionar_filho(f, c_l);
+    adicionar_filho(f, c_r);
+    
+    enum RelationType rel = identificar_rel(&expr[i]);
+    f->rel = rel;
+    f->num_rel = 1;
+    
+    encontrar_filhos(c_l);
+    encontrar_filhos(c_r);
+
+}   
 
 /* 
 FUNÇÕES PÚBLICAS
@@ -150,10 +201,6 @@ Func* mapear_func(const char *expr, char var){
     Func *f = criar_func(var, expr);
 
     encontrar_filhos(f);
-
-    for(int i = 0; i < f->num_children; i++){
-        encontrar_filhos(f->children[i]);
-    }
 
     return f;
 
@@ -204,15 +251,22 @@ FUNÇÃO MAIN - TESTE
 
 int main(){
     
-    char *expr = alocar_string("(2x+3sen(x+2))+4x+2");
+    // char *expr = alocar_string("(2*x+3*sen(x+2))*(4*x*2)");
+    char *expr = alocar_string("(2*x+3*sen(x+2))+((4*x*2))");
+    // char *expr = alocar_string("(4*x*2)");
 
     Func *f = mapear_func(expr, 'x');
-    // Func *f = mapear_func("(((2)*(x))+((3)*(sen(x+2))))*(((4)*(x))+(2))", 'x');
     printf("\n");
 
     printFunc(f);
 
     liberar_func(f);
+
+    // Func *f = criar_func('x', expr);
+
+    // retirar_parenteses(f);
+
+    // printFunc(f);
 
     // enum RelationType type = identificar_rel("+");
 

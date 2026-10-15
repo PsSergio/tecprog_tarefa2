@@ -11,7 +11,6 @@ static int comparar_string(char *s1, char *s2){
 }
 
 enum RelationType identificar_rel(char *rel){
-    
     switch (rel[0])
     {
     case '+':
