@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 /* 
 FUNÇÕES INTERNAS
 */
@@ -228,7 +229,7 @@ static void encontrar_filhos(Func *f){
     
     encontrar_filhos(c_l);
     encontrar_filhos(c_r);
-    
+
 }   
 
 /* 
@@ -276,8 +277,36 @@ Func* simplificar_func(const Func *f){
     return NULL;
 }
 
+/* 
+ @brief avalia o valor numérico de uma equação mapaeada no ponto x
+ @param f Função raiz mapeada por mapear_func
+ @param x Ponto x em que f será calculado
+ @return Retorna o valor numérico calculado no ponto x
+ @note O retorno pode ser numérico, NAN ou INFINITY
+*/
 double avaliar_func(const Func *f, double x){
-    return 0;
+    if(f == NULL) return NAN;
+
+    if(f->num_children == 0){
+        if(f->exp[0] == f->var && f->exp[1] == '\0') return x;
+        double x3 = atof(f->exp);
+        
+        return x3;
+    }
+
+    if(f->num_children == 1){
+        double x1 = avaliar_func(f->children[0], x );
+        double x3 = aplicar_relacao(x1, 0, f->rel);
+
+        return x3;
+
+    }
+
+    // num_children == 2
+    double x1 = avaliar_func(f->children[0], x);
+    double x2 = avaliar_func(f->children[1], x);
+    double x3 = aplicar_relacao(x1, x2, f->rel);
+    return x3;
 }
 
 static char* alocar_string(char *expr){
@@ -300,17 +329,25 @@ FUNÇÃO MAIN - TESTE
 
 int main(){
     
-    // char *expr = alocar_string("(2*x+3*sen(x+2))*(4*x*2)");
-    char *expr = alocar_string("(sen(x)+3)/((cosx)^3+5*x)");
+    
 
-    // char *expr = alocar_string("(4*x*2)");
+    // char *expr = alocar_string("(2*x+3*sen(x+2))*(4*x*2)");
+    char *expr = alocar_string("(sen(x)+3)/((cos(x))^3+5*x)");
+
+    // // char *expr = alocar_string("sen(45)");
 
     Func *f = mapear_func(expr, 'x');
-    printf("\n");
+    // printf("\n");
 
-    printFunc(f);
+    // printFunc(f);
+
+    // printf("\n");
+
+    double x = avaliar_func(f, 0);
+    printf("%f", x);
     
-    liberar_func(f);
+    
+    // liberar_func(f);
 
     // Func *f = criar_func('x', expr);
 
