@@ -7,6 +7,8 @@
 #include <math.h>
 #include <string.h>
 
+#define expr_len 256
+
 /* 
 FUNÇÕES INTERNAS
 */
@@ -107,7 +109,7 @@ static void retirar_parenteses(Func *f){
 
 }
 
-static Func* criar_func(char var, char* exp){
+static Func* criar_func(char var, const char* exp){
 
     Func *f = malloc(sizeof(*f));
 
@@ -269,7 +271,7 @@ static void encontrar_filhos(Func *f){
 
 }   
 
-Func* clonar_func(Func *f){
+Func* clonar_func(const Func *f){
     
     char* expr = alocar_string(f->exp);
     Func *n_f = criar_func(f->var, expr);
@@ -293,111 +295,54 @@ static double is_number(Func *f){
     return v;
 }
 
+static Func* simplificar_func_uni(const Func *c, enum RelationType rel){
+    char *expr = malloc(expr_len *sizeof *expr);
 
-/* 
-FUNÇÕES PÚBLICAS
-*/
-
-/* 
- @brief Mapeia uma expressão matemática, recebida como string, para uma estrutura Func
- @param expr Expressão matemática a ser mapeada
- @param var um character que representa a incógnita da equação
- @return Retorna a estrutura Func raiz da equação. Esta possui no máximo dois filhos, também de estrutura Func.
- @note O retorno deve ser liberado da Heap pela função liberar_func após uso
-*/
-Func* mapear_func(const char *expr, char var){
-
-    Func *f = criar_func(var, expr);
-
-    encontrar_filhos(f);
-
-    return f;
-
-}
-
-/*
- @brief Libeara da Heap uma estrutura Func e todos seus filhos de forma recursiva
- @param f estrutura Func a ser liberada da memória
-*/
-void liberar_func(Func *f){
-
-    if(f == NULL) return;
-    
-    for(int i = 0; i < f->num_children; i++){
-        liberar_func(f->children[i]);
-    }
-
-    free(f->exp);
-
-    free(f->children);
-
-    free(f);
-
-}
-
-Func* simplificar_func(const Func *f){
-    size_t expr_len = 256;
-
-    if(f == NULL) return NULL;
-    
-    if(f->num_children == 0){
-        return clonar_func(f);
-    }else if(f->num_children == 1){
-        char *expr = malloc(expr_len *sizeof *expr);
-
-        Func *c = simplificar_func(f->children[0]);
-
-        Func *s = criar_func(f->var, expr);
-        double v = 0.0;
-        v = is_number(c);
-
-        switch (f->rel)
-        {
-        case SEN:
-            if(!isnan(v)){
-                sprintf(s->exp, "%f", sin(v));
-                break;
-            }
-            sprintf(s->exp, "sen(%s)", c->exp);
-            s->rel = SEN;
-            break;
-        case COS:
-            if(!isnan(v)){
-                sprintf(s->exp, "%f", cos(v));
-                break;
-            }
-            sprintf(s->exp, "cos(%s)", c->exp);
-            s->rel = COS;
-            break;
-        case TAN:
-            if(!isnan(v)){
-                sprintf(s->exp, "%f", tan(v));
-                break;
-            }
-
-            sprintf(s->exp, "tan(%s)", c->exp);
-            s->rel = TAN;
-            break;
-        default:
+    Func *s = criar_func(c->var, expr);
+    double v = 0.0;
+    v = is_number(c);
+    switch (rel)
+    {
+    case SEN:
+        if(!isnan(v)){
+            sprintf(s->exp, "%f", sin(v));
             break;
         }
-
-        s->exp = realloc(s->exp, strlen(s->exp)+1);
-        return s;
-
+        sprintf(s->exp, "sen(%s)", c->exp);
+        s->rel = SEN;
+        break;
+    case COS:
+        if(!isnan(v)){
+            sprintf(s->exp, "%f", cos(v));
+            break;
+        }
+        sprintf(s->exp, "cos(%s)", c->exp);
+        s->rel = COS;
+        break;
+    case TAN:
+        if(!isnan(v)){
+            sprintf(s->exp, "%f", tan(v));
+            break;
+        }
+        sprintf(s->exp, "tan(%s)", c->exp);
+        s->rel = TAN;
+        break;
+    default:
+        break;
     }
+    s->exp = realloc(s->exp, strlen(s->exp)+1);
+    return s;
+}
 
-    Func *c1 = simplificar_func(f->children[0]);
-    Func *c2 = simplificar_func(f->children[1]);
-    
+static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationType rel){
     char *expr = malloc(expr_len *sizeof *expr);
-    Func *s = criar_func(f->var, expr);
+    Func *s = criar_func(c1->var, expr);
     s->rel = DESCONHECIDO;
 
     double v1 = 0.0, v2 = 0.0;
     v1 = is_number(c1); v2 = is_number(c2);
 
-    switch (f->rel)
+    switch (rel)
     {
     case SOMA:
         if(!isnan(v1) && !isnan(v2)){
@@ -556,6 +501,66 @@ Func* simplificar_func(const Func *f){
     s->exp = realloc(s->exp, strlen(s->exp)+1);
     
     return s;
+}
+
+/* 
+FUNÇÕES PÚBLICAS
+*/
+
+/* 
+ @brief Mapeia uma expressão matemática, recebida como string, para uma estrutura Func
+ @param expr Expressão matemática a ser mapeada
+ @param var um character que representa a incógnita da equação
+ @return Retorna a estrutura Func raiz da equação. Esta possui no máximo dois filhos, também de estrutura Func.
+ @note O retorno deve ser liberado da Heap pela função liberar_func após uso
+*/
+Func* mapear_func(const char *expr, char var){
+
+    Func *f = criar_func(var, expr);
+
+    encontrar_filhos(f);
+
+    return f;
+
+}
+
+/*
+ @brief Libeara da Heap uma estrutura Func e todos seus filhos de forma recursiva
+ @param f estrutura Func a ser liberada da memória
+*/
+void liberar_func(Func *f){
+
+    if(f == NULL) return;
+    
+    for(int i = 0; i < f->num_children; i++){
+        liberar_func(f->children[i]);
+    }
+
+    free(f->exp);
+
+    free(f->children);
+
+    free(f);
+
+}
+
+
+Func* simplificar_func(const Func *f){
+    if(f == NULL) return NULL;
+    
+    if(f->num_children == 0){
+        return clonar_func(f);
+    }else if(f->num_children == 1){
+
+        const Func *c = simplificar_func(f->children[0]);
+        return simplificar_func_uni(c, f->rel);
+
+    }
+
+    const Func *c1 = simplificar_func(f->children[0]);
+    const Func *c2 = simplificar_func(f->children[1]);
+    
+    return simplificar_func_bi(c1, c2, f->rel);
     
 }
 
@@ -606,7 +611,7 @@ int main(){
 
     // char *expr = alocar_string("(x+x-x)*10");
     // char *expr = alocar_string("(x+x)-(x+x)"); // corrigir
-    char *expr = alocar_string("tan(x-x+x)");
+    char *expr = alocar_string("tan(x-x)");
 
     Func *f = mapear_func(expr, 'x');
     // printf("\n");
