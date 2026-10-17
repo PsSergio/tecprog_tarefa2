@@ -336,25 +336,63 @@ void liberar_func(Func *f){
 }
 
 Func* simplificar_func(const Func *f){
+    size_t expr_len = 256;
 
     if(f == NULL) return NULL;
     
     if(f->num_children == 0){
         return clonar_func(f);
     }else if(f->num_children == 1){
+        char *expr = malloc(expr_len *sizeof *expr);
 
-        return clonar_func(f);
+        Func *c = simplificar_func(f->children[0]);
+
+        Func *s = criar_func(f->var, expr);
+        double v = 0.0;
+        v = is_number(c);
+
+        switch (f->rel)
+        {
+        case SEN:
+            if(!isnan(v)){
+                sprintf(s->exp, "%f", sin(v));
+                break;
+            }
+            sprintf(s->exp, "sen(%s)", c->exp);
+            s->rel = SEN;
+            break;
+        case COS:
+            if(!isnan(v)){
+                sprintf(s->exp, "%f", cos(v));
+                break;
+            }
+            sprintf(s->exp, "cos(%s)", c->exp);
+            s->rel = COS;
+            break;
+        case TAN:
+            if(!isnan(v)){
+                sprintf(s->exp, "%f", tan(v));
+                break;
+            }
+
+            sprintf(s->exp, "tan(%s)", c->exp);
+            s->rel = TAN;
+            break;
+        default:
+            break;
+        }
+
+        s->exp = realloc(s->exp, strlen(s->exp)+1);
+        return s;
 
     }
 
     Func *c1 = simplificar_func(f->children[0]);
     Func *c2 = simplificar_func(f->children[1]);
     
-    size_t expr_len = 256;
     char *expr = malloc(expr_len *sizeof *expr);
     Func *s = criar_func(f->var, expr);
-
-    s->rel = f->rel;
+    s->rel = DESCONHECIDO;
 
     double v1 = 0.0, v2 = 0.0;
     v1 = is_number(c1); v2 = is_number(c2);
@@ -364,20 +402,17 @@ Func* simplificar_func(const Func *f){
     case SOMA:
         if(!isnan(v1) && !isnan(v2)){
             sprintf(s->exp, "%f", v1+v2);
-            s->rel = DESCONHECIDO;
             break;
         }
         else if(isnan(v1)){
             if(v2 == 0.0){
                 sprintf(s->exp, "%s", c1->exp);
-                s->rel = DESCONHECIDO;
                 break;
             }
         }
         else if(isnan(v2)){
             if(v1 == 0.0){
                 sprintf(s->exp, "%s", c2->exp);
-                s->rel = DESCONHECIDO;
                 break;
             }
         }
@@ -389,14 +424,12 @@ Func* simplificar_func(const Func *f){
     case SUB:
         if(!isnan(v1) && !isnan(v2)){ // ambos números
             sprintf(s->exp, "%f", v1-v2);
-            s->rel = DESCONHECIDO;
             break;
         }
         else if(isnan(v1)){ // v1 é x
             
             if(v2 == 0.0){ // v2 é 0
                 sprintf(s->exp, "%s", c1->exp);
-                s->rel = DESCONHECIDO;
                 break;
             }else if(!isnan(v2)) { // v2 é número
 
@@ -410,7 +443,6 @@ Func* simplificar_func(const Func *f){
         else if(isnan(v2)){
             if(v1 == 0.0){
                 sprintf(s->exp, "-%s", c2->exp);
-                s->rel = DESCONHECIDO;
                 break;
             }else if(!isnan(v1)) {
                 sprintf(s->exp, "(%f)-(%s)", v1, c2->exp);
@@ -422,8 +454,9 @@ Func* simplificar_func(const Func *f){
         }
         
         if(c1->num_children == 0 && c2->num_children == 0) {
+            // fazer func pra comparar arvores
+            // temos q simplificar (x+2)-(x+2) por exemplo
             sprintf(s->exp, "%f", 0.0);
-            s->rel = DESCONHECIDO;
         }
         else {
             sprintf(s->exp, "(%s)-(%s)", c1->exp, c2->exp);
@@ -435,27 +468,22 @@ Func* simplificar_func(const Func *f){
     case MULT:
         if(!isnan(v1) && !isnan(v2)){ // ambos números
             sprintf(s->exp, "%f", v1*v2);
-            s->rel = DESCONHECIDO;
             break;
         }
         else if(isnan(v1)){
             if(v2 == 0.0){
                 sprintf(s->exp, "%f", 0.0);
-                s->rel = DESCONHECIDO;
                 break;
             }else if(v2 == 1.0){
                 sprintf(s->exp, "%s", c1->exp);
-                s->rel = DESCONHECIDO;
                 break;
             }
         }else if(isnan(v2)){
             if(v1 == 0.0){
                 sprintf(s->exp, "%f", 0.0);
-                s->rel = DESCONHECIDO;
                 break;
             }else if(v1 == 1.0){
                 sprintf(s->exp, "%s", c2->exp);
-                s->rel = DESCONHECIDO;
                 break;
             }
         }
@@ -468,12 +496,10 @@ Func* simplificar_func(const Func *f){
         if(!isnan(v1) && !isnan(v2)){
             if(v1 == 0.0 && v2 != 0.0){
                 sprintf(s->exp, "%f", 0.0);
-                s->rel = DESCONHECIDO;
 
                 break;
             }else if(v1 != 0.0 && v2 != 0.0){
                 sprintf(s->exp, "%f", v1/v2);
-                s->rel = DESCONHECIDO;
 
                 break;
             }
@@ -481,20 +507,18 @@ Func* simplificar_func(const Func *f){
         else if(isnan(v1)){
             if(v2 == 1.0){
                 sprintf(s->exp, "%s", c1->exp);
-                s->rel = DESCONHECIDO;
 
                 break;
             }
         }else if(isnan(v2)){
             if(v1 == 0.0){
                 sprintf(s->exp, "%f", 0.0);
-                s->rel = DESCONHECIDO;
                 break;
             }
         }
-        if(c1->num_children == 0 && c2->num_children == 0){
+        if(c1->num_children == 0 && c2->num_children == 0){ // fazer func pra comparar arvores
+            // temos q simplificar (x+2)/(x+2) por exemplo
             sprintf(s->exp, "%f", 1.0);
-            s->rel = DESCONHECIDO;
             break;
         }
         sprintf(s->exp, "(%s)/(%s)", c1->exp, c2->exp);
@@ -503,6 +527,28 @@ Func* simplificar_func(const Func *f){
         s->rel = DIV;
         break;
     case POT:
+        if(!isnan(v1) && !isnan(v2)){
+            sprintf(s->exp, "%f", pow(v1,v2));
+            break;
+        }else if(isnan(v1)){
+            if(v2 == 0.0){
+                sprintf(s->exp, "%f", 1.0);
+                break;
+            }else if(v2 == 1.0){
+                sprintf(s->exp, "%s", c1->exp);
+                break;
+            }
+        }else if(isnan(v2)){
+            if(v1 == 1.0){
+                sprintf(s->exp, "%f", 1.0);
+                break;
+            }
+        }
+
+        sprintf(s->exp, "(%s)^(%s)", c1->exp, c2->exp);
+        adicionar_filho(s, c1);
+        adicionar_filho(s, c2);
+        s->rel = POT;
         break;
     default:
         break;
@@ -560,7 +606,7 @@ int main(){
 
     // char *expr = alocar_string("(x+x-x)*10");
     // char *expr = alocar_string("(x+x)-(x+x)"); // corrigir
-    char *expr = alocar_string("(x-x+x)/1");
+    char *expr = alocar_string("tan(x-x+x)");
 
     Func *f = mapear_func(expr, 'x');
     // printf("\n");
