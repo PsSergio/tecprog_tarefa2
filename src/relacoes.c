@@ -31,7 +31,7 @@ enum RelationType identificar_rel(char *rel){
     if(comparar_string(rel, "tan") == 0) return TAN;
 
     return DESCONHECIDO;
-};
+}
 
 void print_rel(enum RelationType rel){
 

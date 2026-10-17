@@ -240,7 +240,7 @@ FUNÇÕES PÚBLICAS
  @return Retorna a estrutura Func raiz da equação. Esta possui no máximo dois filhos, também de estrutura Func.
  @note O retorno deve ser liberado da Heap pela função liberar_func após uso
 */
-Func* mapear_func(const char *expr, char var){
+Func* mapear_func(char *expr, char var){
 
     Func *f = criar_func(var, expr);
 
@@ -295,7 +295,7 @@ static char* alocar_string(char *expr){
 
 /* 
 FUNÇÃO MAIN - TESTE
-*/
+
 
 int main(){
     
@@ -321,3 +321,5 @@ int main(){
     // printf("%d", type);
 
 }
+
+*/
