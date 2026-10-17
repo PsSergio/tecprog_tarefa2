@@ -17,11 +17,13 @@ static char* alocar_string(char *expr){
 
     int i = 0;
     for(i = 0; expr[i] != '\0'; i++);
-    char *new_expr = malloc(i* sizeof *new_expr);
+    char *new_expr = malloc((i+1)* sizeof *new_expr);
 
     for(int j = 0; expr[j] != '\0'; j++){
         new_expr[j] = expr[j];
     }
+
+    new_expr[i] = '\0';
 
     return new_expr;
 
@@ -295,6 +297,30 @@ static double is_number(Func *f){
     return v;
 }
 
+static bool arvores_sao_iguais(const Func *c1, const Func *c2){
+
+    if(c1 == NULL && c2 == NULL) return true;
+    if(c1 == NULL || c2 == NULL) return false;
+    if(c1->num_children != c2->num_children) return false;
+    if(c1->rel != c2->rel) return false;
+
+    if(c1->num_children == 0){
+        retirar_parenteses(c1);
+        retirar_parenteses(c2);
+        return (strcmp(c1->exp, c2->exp) == 0);
+    }
+
+    for(int i = 0; i < c1->num_children; i++){
+        bool r = arvores_sao_iguais(c1->children[i], c2->children[i]);
+        if(!r) {
+            return false;
+        }
+    }
+
+    return true;
+
+}
+
 static Func* simplificar_func_uni(const Func *c, enum RelationType rel){
     char *expr = malloc(expr_len *sizeof *expr);
 
@@ -398,7 +424,7 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
             }
         }
         
-        if(c1->num_children == 0 && c2->num_children == 0) {
+        if((c1->num_children == 0 && c2->num_children == 0) || arvores_sao_iguais(c1,c2)) {
             // fazer func pra comparar arvores
             // temos q simplificar (x+2)-(x+2) por exemplo
             sprintf(s->exp, "%f", 0.0);
@@ -461,7 +487,7 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
                 break;
             }
         }
-        if(c1->num_children == 0 && c2->num_children == 0){ // fazer func pra comparar arvores
+        if((c1->num_children == 0 && c2->num_children == 0) || arvores_sao_iguais(c1, c2)){ // fazer func pra comparar arvores
             // temos q simplificar (x+2)/(x+2) por exemplo
             sprintf(s->exp, "%f", 1.0);
             break;
@@ -607,19 +633,24 @@ FUNÇÃO MAIN - TESTE
 int main(){
 
     // char *expr = alocar_string("(2*x+3*sen(x+2))*(4*x*2)");
-    // char *expr = alocar_string("(sen(x)+3)/((cosx)^3+5*x)");
+    char *expr = alocar_string("(sen(x)+3)/((cosx)^3+5*x)");
 
     // char *expr = alocar_string("(x+x-x)*10");
     // char *expr = alocar_string("(x+x)-(x+x)"); // corrigir
-    char *expr = alocar_string("tan(x-x)");
+    // char *expr = alocar_string("x+x-x");
+
 
     Func *f = mapear_func(expr, 'x');
+    
     // printf("\n");
 
+    // printFunc(f);
+
     Func *s = simplificar_func(f);
+
     // Func *s = clonar_func(f);
     
-    printFunc(s);
+    // printFunc(s);
 
     printf("\n");
 
