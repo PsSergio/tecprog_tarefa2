@@ -5,9 +5,107 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
+#include <string.h>
+
 /* 
 FUNÇÕES INTERNAS
 */
+
+static char* alocar_string(char *expr){
+
+    int i = 0;
+    for(i = 0; expr[i] != '\0'; i++);
+    char *new_expr = malloc(i* sizeof *new_expr);
+
+    for(int j = 0; expr[j] != '\0'; j++){
+        new_expr[j] = expr[j];
+    }
+
+    return new_expr;
+
+}
+
+
+
+/* 
+ @brief limita uma string em um intervalo fechado-aberto [indice1, indice2)
+ @param expr string a ser limitada
+ @param inicio índice que representa o início do intervalo fechado
+ @param fim índice que representa o fim do intervalo aberto
+ @return retorna nova_expr, uma nova string limitada alocada na heap 
+ @pre expr != NULL
+ @pre [indice1, indice2) índices válidos
+ @note essa função não libera a memória alocada da nova string
+*/
+static char* limitar_string(char *expr, int inicio, int fim){
+
+    int tamanho_vetor = fim-inicio; // por causa do \0 no final
+
+    char *nova_expr = malloc(tamanho_vetor * sizeof *nova_expr);
+
+    if(nova_expr == NULL){
+        printf("erro ao alocar");
+        printf("%d", tamanho_vetor);
+        return NULL;
+    }
+
+    int c = 0;
+    for(int i = inicio; i < fim; i++, c++){
+        nova_expr[c] = expr[i];
+    }
+
+    return nova_expr;
+
+}
+
+static char* juntar_strings(char *str1, char *str2){ // acho q pode melhorar a complexidade
+    int i, j;
+    for(i = 0; str1[i] != '\0'; i++);
+    for(j = 0; str2[j] != '\0'; j++);
+    int tamanho_f = i+j;
+    char* r = malloc(tamanho_f * sizeof *r);
+    for(int k = 0; k < str1[k] != '\0'; k++){
+        r[k] = str1[k];
+    }
+    for(int k = 0; k < str2[k] != '\0'; k++){
+        r[i+k] = str2[k];
+    }
+
+    return r;
+}
+
+static void retirar_parenteses(Func *f){
+    char *expr = f->exp;
+    int n = 0, i = 0;
+    int quant_p = 0;
+
+    if(expr[0] != '(') return;
+
+    for(i = 0; expr[i] != '\0'; i++){
+        
+        if(expr[i] == '(') n++;
+        if(expr[i] == ')') {
+            if(n == 1) quant_p++;
+            n--;
+        }
+
+        if(n < 0) continue;
+        
+    }
+
+    if(quant_p == 1){
+
+        if(expr[0] == '(' && expr[i-1] == ')'){
+            char *new_expr = limitar_string(expr, 1, i-1);
+            free(expr);
+            f->exp = new_expr;
+            retirar_parenteses(f); // caso haja casos como: ((...))
+            return;
+        }
+
+    }
+
+}
 
 static Func* criar_func(char var, char* exp){
 
@@ -74,69 +172,8 @@ static void printFunc(Func *f){
     }
 }
 
-/* 
- @brief limita uma string em um intervalo fechado-aberto [indice1, indice2)
- @param expr string a ser limitada
- @param inicio índice que representa o início do intervalo fechado
- @param fim índice que representa o fim do intervalo aberto
- @return retorna nova_expr, uma nova string limitada alocada na heap 
- @pre expr != NULL
- @pre [indice1, indice2) índices válidos
- @note essa função não libera a memória alocada da nova string
-*/
-static char* limitar_string(char *expr, int inicio, int fim){
 
-    int tamanho_vetor = fim-inicio; // por causa do \0 no final
 
-    char *nova_expr = malloc(tamanho_vetor * sizeof *nova_expr);
-
-    if(nova_expr == NULL){
-        printf("erro ao alocar");
-        printf("%d", tamanho_vetor);
-        return NULL;
-    }
-
-    int c = 0;
-    for(int i = inicio; i < fim; i++, c++){
-        nova_expr[c] = expr[i];
-    }
-
-    return nova_expr;
-
-}
-
-static void retirar_parenteses(Func *f){
-    char *expr = f->exp;
-    int n = 0, i = 0;
-    int quant_p = 0;
-
-    if(expr[0] != '(') return;
-
-    for(i = 0; expr[i] != '\0'; i++){
-        
-        if(expr[i] == '(') n++;
-        if(expr[i] == ')') {
-            if(n == 1) quant_p++;
-            n--;
-        }
-
-        if(n < 0) continue;
-        
-    }
-
-    if(quant_p == 1){
-
-        if(expr[0] == '(' && expr[i-1] == ')'){
-            char *new_expr = limitar_string(expr, 1, i-1);
-            free(expr);
-            f->exp = new_expr;
-            retirar_parenteses(f); // caso haja casos como: ((...))
-            return;
-        }
-
-    }
-
-}
 
 /*
  @brief Busca grupos de expressões matemáticas seguindo as regras de associatividade e os adiciona em uma Func raiz
@@ -163,7 +200,7 @@ static void encontrar_filhos(Func *f){
     
     for(tamanho_expr = 0; expr[tamanho_expr] != '\0'; tamanho_expr++);
 
-    for(int i = tamanho_expr; i > 0; i--){ // percorre pela direita pela associatividade
+    for(int i = tamanho_expr; i > 0; i--){ // percorre pela c2eita pela associatividade
         
         if(expr[i] == ')') n--;
         if(expr[i] == '(') n++;
@@ -232,6 +269,31 @@ static void encontrar_filhos(Func *f){
 
 }   
 
+Func* clonar_func(Func *f){
+    
+    char* expr = alocar_string(f->exp);
+    Func *n_f = criar_func(f->var, expr);
+    n_f->rel = f->rel;
+
+    for(int i = 0; i < f->num_children; i++){
+        Func *c = clonar_func(f->children[i]);
+        adicionar_filho(n_f, c);
+    }
+
+    return n_f;
+    
+}
+
+static double is_number(Func *f){
+    char *fim = NULL;
+    if(f == NULL) return NAN;
+    double v = strtod(f->exp, &fim);
+    
+    if(fim == f->exp) return NAN;
+    return v;
+}
+
+
 /* 
 FUNÇÕES PÚBLICAS
 */
@@ -274,7 +336,181 @@ void liberar_func(Func *f){
 }
 
 Func* simplificar_func(const Func *f){
-    return NULL;
+
+    if(f == NULL) return NULL;
+    
+    if(f->num_children == 0){
+        return clonar_func(f);
+    }else if(f->num_children == 1){
+
+        return clonar_func(f);
+
+    }
+
+    Func *c1 = simplificar_func(f->children[0]);
+    Func *c2 = simplificar_func(f->children[1]);
+    
+    size_t expr_len = 256;
+    char *expr = malloc(expr_len *sizeof *expr);
+    Func *s = criar_func(f->var, expr);
+
+    s->rel = f->rel;
+
+    double v1 = 0.0, v2 = 0.0;
+    v1 = is_number(c1); v2 = is_number(c2);
+
+    switch (f->rel)
+    {
+    case SOMA:
+        if(!isnan(v1) && !isnan(v2)){
+            sprintf(s->exp, "%f", v1+v2);
+            s->rel = DESCONHECIDO;
+            break;
+        }
+        else if(isnan(v1)){
+            if(v2 == 0.0){
+                sprintf(s->exp, "%s", c1->exp);
+                s->rel = DESCONHECIDO;
+                break;
+            }
+        }
+        else if(isnan(v2)){
+            if(v1 == 0.0){
+                sprintf(s->exp, "%s", c2->exp);
+                s->rel = DESCONHECIDO;
+                break;
+            }
+        }
+        sprintf(s->exp, "(%s)+(%s)", c1->exp, c2->exp);
+        adicionar_filho(s, c1);
+        adicionar_filho(s, c2);
+        s->rel = SOMA;
+        break;
+    case SUB:
+        if(!isnan(v1) && !isnan(v2)){ // ambos números
+            sprintf(s->exp, "%f", v1-v2);
+            s->rel = DESCONHECIDO;
+            break;
+        }
+        else if(isnan(v1)){ // v1 é x
+            
+            if(v2 == 0.0){ // v2 é 0
+                sprintf(s->exp, "%s", c1->exp);
+                s->rel = DESCONHECIDO;
+                break;
+            }else if(!isnan(v2)) { // v2 é número
+
+                sprintf(s->exp, "(%s)-(%f)", c1->exp, v2);
+                adicionar_filho(s, c1);
+                adicionar_filho(s, c2);
+                s->rel = SUB;
+                break;
+            }
+        }
+        else if(isnan(v2)){
+            if(v1 == 0.0){
+                sprintf(s->exp, "-%s", c2->exp);
+                s->rel = DESCONHECIDO;
+                break;
+            }else if(!isnan(v1)) {
+                sprintf(s->exp, "(%f)-(%s)", v1, c2->exp);
+                adicionar_filho(s, c1);
+                adicionar_filho(s, c2);
+                s->rel = SUB;
+                break;
+            }
+        }
+        
+        if(c1->num_children == 0 && c2->num_children == 0) {
+            sprintf(s->exp, "%f", 0.0);
+            s->rel = DESCONHECIDO;
+        }
+        else {
+            sprintf(s->exp, "(%s)-(%s)", c1->exp, c2->exp);
+            adicionar_filho(s, c1);
+            adicionar_filho(s, c2);
+            s->rel = SUB;
+        }
+        break;
+    case MULT:
+        if(!isnan(v1) && !isnan(v2)){ // ambos números
+            sprintf(s->exp, "%f", v1*v2);
+            s->rel = DESCONHECIDO;
+            break;
+        }
+        else if(isnan(v1)){
+            if(v2 == 0.0){
+                sprintf(s->exp, "%f", 0.0);
+                s->rel = DESCONHECIDO;
+                break;
+            }else if(v2 == 1.0){
+                sprintf(s->exp, "%s", c1->exp);
+                s->rel = DESCONHECIDO;
+                break;
+            }
+        }else if(isnan(v2)){
+            if(v1 == 0.0){
+                sprintf(s->exp, "%f", 0.0);
+                s->rel = DESCONHECIDO;
+                break;
+            }else if(v1 == 1.0){
+                sprintf(s->exp, "%s", c2->exp);
+                s->rel = DESCONHECIDO;
+                break;
+            }
+        }
+        sprintf(s->exp, "(%s)*(%s)", c1->exp, c2->exp);
+        adicionar_filho(s, c1);
+        adicionar_filho(s, c2);
+        s->rel = MULT;
+        break;
+    case DIV:
+        if(!isnan(v1) && !isnan(v2)){
+            if(v1 == 0.0 && v2 != 0.0){
+                sprintf(s->exp, "%f", 0.0);
+                s->rel = DESCONHECIDO;
+
+                break;
+            }else if(v1 != 0.0 && v2 != 0.0){
+                sprintf(s->exp, "%f", v1/v2);
+                s->rel = DESCONHECIDO;
+
+                break;
+            }
+        }
+        else if(isnan(v1)){
+            if(v2 == 1.0){
+                sprintf(s->exp, "%s", c1->exp);
+                s->rel = DESCONHECIDO;
+
+                break;
+            }
+        }else if(isnan(v2)){
+            if(v1 == 0.0){
+                sprintf(s->exp, "%f", 0.0);
+                s->rel = DESCONHECIDO;
+                break;
+            }
+        }
+        if(c1->num_children == 0 && c2->num_children == 0){
+            sprintf(s->exp, "%f", 1.0);
+            s->rel = DESCONHECIDO;
+            break;
+        }
+        sprintf(s->exp, "(%s)/(%s)", c1->exp, c2->exp);
+        adicionar_filho(s, c1);
+        adicionar_filho(s, c2);
+        s->rel = DIV;
+        break;
+    case POT:
+        break;
+    default:
+        break;
+    }
+    s->exp = realloc(s->exp, strlen(s->exp)+1);
+    
+    return s;
+    
 }
 
 /* 
@@ -289,6 +525,8 @@ double avaliar_func(const Func *f, double x){
 
     if(f->num_children == 0){
         if(f->exp[0] == f->var && f->exp[1] == '\0') return x;
+        if(f->exp[0] == '-' && f->exp[1] == f->var &&  f->exp[2] == '\0') return -x;
+        if(f->exp[0] == '+' && f->exp[1] == f->var &&  f->exp[2] == '\0') return x;
         double x3 = atof(f->exp);
         
         return x3;
@@ -309,45 +547,37 @@ double avaliar_func(const Func *f, double x){
     return x3;
 }
 
-static char* alocar_string(char *expr){
 
-    int i = 0;
-    for(i = 0; expr[i] != '\0'; i++);
-    char *new_expr = malloc(i* sizeof *new_expr);
-
-    for(int j = 0; expr[j] != '\0'; j++){
-        new_expr[j] = expr[j];
-    }
-
-    return new_expr;
-
-}
 
 /* 
 FUNÇÃO MAIN - TESTE
 */
 
 int main(){
-    
-    
 
     // char *expr = alocar_string("(2*x+3*sen(x+2))*(4*x*2)");
-    char *expr = alocar_string("(sen(x)+3)/((cos(x))^3+5*x)");
+    // char *expr = alocar_string("(sen(x)+3)/((cosx)^3+5*x)");
 
-    // // char *expr = alocar_string("sen(45)");
+    // char *expr = alocar_string("(x+x-x)*10");
+    // char *expr = alocar_string("(x+x)-(x+x)"); // corrigir
+    char *expr = alocar_string("(x-x+x)/1");
 
     Func *f = mapear_func(expr, 'x');
     // printf("\n");
 
-    // printFunc(f);
+    Func *s = simplificar_func(f);
+    // Func *s = clonar_func(f);
+    
+    printFunc(s);
 
-    // printf("\n");
+    printf("\n");
 
-    double x = avaliar_func(f, 0);
-    printf("%f", x);
+    // double x = avaliar_func(f, 1);
+    // printf("%f", x);
     
     
-    // liberar_func(f);
+    liberar_func(f);
+    liberar_func(s);
 
     // Func *f = criar_func('x', expr);
 
