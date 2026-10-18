@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <math.h>
 #include <assert.h>
-#include "funcoes.h"
-#include "derivadas.h"
+#include "../include/funcoes.h"
+#include "../include/derivadas.h"
 
 static char* alocar_string(char *expr){
 
@@ -27,7 +27,7 @@ void testar_derivar_func() {
     /* Teste 1.1: Polinômio padrão (x^3 -> 3*x^2). Para x = 2: 3*(4) = 12.0 */
     Func *f1 = mapear_func(alocar_string("x^3"), 'x');
     assert(f1 != NULL);
-    Func *df1 = derivar_func(f1, "x");
+    Func *df1 = derivar_func(f1, 'x');
     assert(df1 != NULL);
     assert(fabs(avaliar_func(df1, 2.0) - 12.0) < 1e-9);
     liberar_func(f1);
@@ -36,7 +36,7 @@ void testar_derivar_func() {
     /* Teste 1.2: Função elementar (sen(x) -> cos(x)). Para x = 0: cos(0) = 1.0 */
     Func *f2 = mapear_func(alocar_string("sen(x)"), 'x');
     assert(f2 != NULL);
-    Func *df2 = derivar_func(f2, "x");
+    Func *df2 = derivar_func(f2, 'x');
     assert(df2 != NULL);
     assert(fabs(avaliar_func(df2, 0.0) - 1.0) < 1e-9);
     liberar_func(f2);
@@ -45,17 +45,17 @@ void testar_derivar_func() {
     /* Teste 1.3: Derivação parcial em relação a outra variável (x^2 rel a y -> 0) */
     Func *f3 = mapear_func(alocar_string("x^2"), 'x');
     assert(f3 != NULL);
-    Func *df3 = derivar_func(f3, "y");
+    Func *df3 = derivar_func(f3, 'y');
     assert(df3 != NULL);
     assert(fabs(avaliar_func(df3, 5.0) - 0.0) < 1e-9);
     liberar_func(f3);
     liberar_func(df3);
 
     /* Teste 1.4: Testando com ponteiro nulo */
-    Func *df4_null1 = derivar_func(NULL, "x");
+    Func *df4_null1 = derivar_func(NULL, 'x');
     assert(df4_null1 == NULL);
 
-    Func *f4 = mapear_func(alocar_string("x^2"), 'x');
+    Func *f4 = mapear_func(alocar_string(""), 'x');
     Func *df4_null2 = derivar_func(f4, NULL);
     assert(df4_null2 == NULL);
     liberar_func(f4);
@@ -114,7 +114,7 @@ void testar_reta_tangente_func() {
 int main() {
 
     testar_derivar_func();
-    tesar_reta_tangente_func();
+    testar_reta_tangente_func();
 
     return 0;
 }
