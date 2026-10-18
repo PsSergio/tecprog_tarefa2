@@ -9,7 +9,7 @@ enum LimitSide {
     BOTH
 };
 
-Func* limite_func(const Func *f, const char *var, double target, LimitSide side);
+Func* limite_func(const Func *f, const char *var, double target, enum LimitSide side);
 bool func_continua_em(const Func *f, double x0);
 
 #endif
