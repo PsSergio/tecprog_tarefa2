@@ -29,6 +29,24 @@ static char* alocar_string(char *expr){
 
 }
 
+static char* remover_espacos(const char *expr) {
+    if (!expr) return NULL;
+
+    size_t len = strlen(expr);
+    char *sem_espacos = (char *)malloc(len + 1);
+    if (!sem_espacos) return NULL;
+
+    size_t j = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (expr[i] != ' ') {
+            sem_espacos[j++] = expr[i];
+        }
+    }
+    sem_espacos[j] = '\0';
+
+    return sem_espacos;
+}
+
 
 
 /* 
@@ -542,7 +560,14 @@ FUNÇÕES PÚBLICAS
 */
 Func* mapear_func(char *expr, char var){
 
-    Func *f = criar_func(var, expr);
+    if(expr == NULL || expr[0] == '\0') return NULL;
+
+    char *expr_limpa = remover_espacos(expr);
+    if (!expr_limpa) return NULL;
+
+    free(expr);
+
+    Func *f = criar_func(var, expr_limpa);
 
     encontrar_filhos(f);
 
@@ -634,48 +659,21 @@ double avaliar_func(const Func *f, double x){
 
 /* 
 FUNÇÃO MAIN - TESTE
-
-
+*/
+/*
 int main(){
 
-    // char *expr = alocar_string("(2*x+3*sen(x+2))*(4*x*2)");
-    char *expr = alocar_string("(sen(x)+3)/((cosx)^3+5*x)");
-
-    // char *expr = alocar_string("(x+x-x)*10");
-    // char *expr = alocar_string("(x+x)-(x+x)"); // corrigir
-    // char *expr = alocar_string("x+x-x");
-
-
-    Func *f = mapear_func(expr, 'x');
+    Func *f1 = mapear_func(alocar_string("x * 0 + 1 * x"), 'x');
     
-    // printf("\n");
-
-    // printFunc(f);
-
-    Func *s = simplificar_func(f);
-
-    // Func *s = clonar_func(f);
+    Func *s1 = simplificar_func(f1);
     
-    // printFunc(s);
+    double r = avaliar_func(s1, 5.0);
 
-    printf("\n");
+    printf("%f", r);
 
-    // double x = avaliar_func(f, 1);
-    // printf("%f", x);
-    
-    
-    liberar_func(f);
-    liberar_func(s);
-
-    // Func *f = criar_func('x', expr);
-
-    // retirar_parenteses(f);
-
-    // printFunc(f);
-
-    // enum RelationType type = identificar_rel("+");
-
-    // printf("%d", type);
+    liberar_func(f1);
+    liberar_func(s1);
+    printf("->Teste 1 OK\n");
 
 }
 
