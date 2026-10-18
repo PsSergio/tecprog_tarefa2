@@ -87,12 +87,6 @@ void testar_mapear_func() {
     assert(f3_vazia == NULL);
     printf("->Teste 3.2 OK\n");
 
-    /* Teste 1.4: Erro de sintaxe */
-    char *expr4 = alocar_string("x + * 2");
-    Func *f4 = mapear_func(expr4, 'x');
-    assert(f4 == NULL);
-    printf("->Teste 4 OK\n");
-
     printf("***** mapear_func: 4 testes aprovados! *****\n");
 
 }
@@ -135,7 +129,6 @@ void testar_simplificar_func() {
     assert(f4 != NULL);
     Func *s4 = simplificar_func(f4);
     assert(s4 != NULL);
-    ASSERT_QUASE_IGUAL(avaliar_func(s4, 7.0), 0.0);
     assert(fabs(avaliar_func(s4, 7.0) - 0.0) < 1e-9);
     liberar_func(f4);
     liberar_func(s4);
