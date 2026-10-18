@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define expr_len 256
 static char* alocar_string(char *expr){
@@ -232,39 +233,28 @@ Func* derivar_func(const Func *f, const char var){
 }
 
 Func* reta_tangente_func(const Func *f, double x0){
-    //Calcula o valor de y no ponto x0
+    if(f == NULL) return NULL;
+    
     double y0 = avaliar_func(f, x0);
 
-    //Calcula a derivada numérica m = f'(x0) usando o método das diferenças finitas
-    double h = 0.00001;
-    double m = (avaliar_func(f, x0 + h) - avaliar_func(f, x0 - h)) / (2 * h);
+    if(!isfinite(y0) || isnan(y0)) return NULL;
+
+    Func *derivada = derivar_func(f, f->var);
+
+    double m = avaliar_func(derivada, x0);
+
+    if(!isfinite(m) || isnan(m)) {
+        // liberar_func(derivada);
+        return NULL;
+    }
 
     //Cria a string contendo a equação da reta: m * (x - x0) + y0
-    char buffer[256];
-    snprintf(buffer, sizeof(buffer), "(%f)*(%c - %f) + %f", m, f->var, x0, y0);
+    char *expr = malloc(expr_len *sizeof *expr);
+    sprintf(expr, "(%f)*(%c - %f) + %f", m, f->var, x0, y0);
+    
+    expr = realloc(expr, strlen(expr)+1);
 
-    int len = 0;
-    for(len = 0; buffer[len] != '\0'; len++);
-    char *expr_reta = malloc((len + 1) * sizeof(*expr_reta));
-    for(int i = 0; i <= len; i++) expr_reta[i] = buffer[i];
-
-    //Mapeia a string gerada para uma nova árvore Func independente
-    Func *reta_func = mapear_func(expr_reta, f->var);
+    Func *reta_func = mapear_func(expr, f->var);
 
     return reta_func;
 }
-
-// int main(){
-
-//     Func *f = mapear_func(alocar_string("x^3"), 'x');
-//     Func *s = derivar_func(f, 'x');
-
-//     double res = avaliar_func(s, 2.0);
-//     printf("\n\n%f", res);
-
-//     liberar_func(f);
-//     liberar_func(s);
-
-//     return 0;
-
-// }

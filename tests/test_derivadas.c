@@ -29,7 +29,6 @@ void testar_derivar_func() {
     assert(f1 != NULL);
     Func *df1 = derivar_func(f1, 'x');
     assert(df1 != NULL);
-    printf("%f", avaliar_func(df1, 2.0));
     assert(fabs(avaliar_func(df1, 2.0) - 12.0) < 1e-9);
     liberar_func(f1);
     liberar_func(df1);
@@ -115,7 +114,7 @@ void testar_reta_tangente_func() {
 int main() {
 
     testar_derivar_func();
-    // testar_reta_tangente_func();
+    testar_reta_tangente_func();
 
     return 0;
 }
