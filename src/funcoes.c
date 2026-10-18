@@ -129,7 +129,7 @@ static void retirar_parenteses(Func *f){
 
 }
 
-static Func* criar_func(char var, const char* exp){
+Func* criar_func(char var, const char* exp){
 
     Func *f = malloc(sizeof(*f));
 
@@ -156,7 +156,7 @@ static Func* criar_func(char var, const char* exp){
  @return retorna 0 se ocorreu com sucesso, 1 caso contrário
  @note essa função não libera os elementos alocados
 */
-static int adicionar_filho(Func *f, Func *child){
+int adicionar_filho(Func *f, Func *child){
     int tamanho_vetor = f->num_children;
     Func **currentChildren = f->children;
 
@@ -588,8 +588,9 @@ void liberar_func(Func *f){
     }
 
     free(f->exp);
-
+    
     free(f->children);
+    
 
     free(f);
 

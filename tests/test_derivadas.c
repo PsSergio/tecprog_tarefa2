@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <math.h>
 #include <assert.h>
-#include "funcoes.h"
-#include "derivadas.h"
+#include "../include/funcoes.h"
+#include "../include/derivadas.h"
 
 static char* alocar_string(char *expr){
 
@@ -114,7 +114,7 @@ void testar_reta_tangente_func() {
 int main() {
 
     testar_derivar_func();
-    tesar_reta_tangente_func();
+    testar_reta_tangente_func();
 
     return 0;
 }
