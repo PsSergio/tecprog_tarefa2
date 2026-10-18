@@ -342,46 +342,46 @@ static bool arvores_sao_iguais(const Func *c1, const Func *c2){
 static Func* simplificar_func_uni(const Func *c, enum RelationType rel){
     char *expr = malloc(expr_len *sizeof *expr);
 
-    Func *s = criar_func(c->var, expr);
+    // Func *s = criar_func(c->var, expr);
     double v = 0.0;
     v = is_number(c);
     switch (rel)
     {
     case SEN:
         if(!isnan(v)){
-            sprintf(s->exp, "%f", sin(v));
+            sprintf(expr, "%f", sin(v));
             break;
         }
-        sprintf(s->exp, "sen(%s)", c->exp);
-        s->rel = SEN;
+        sprintf(expr, "sen(%s)", c->exp);
+        // s->rel = SEN;
         break;
     case COS:
         if(!isnan(v)){
-            sprintf(s->exp, "%f", cos(v));
+            sprintf(expr, "%f", cos(v));
             break;
         }
-        sprintf(s->exp, "cos(%s)", c->exp);
-        s->rel = COS;
+        sprintf(expr, "cos(%s)", c->exp);
+        // s->rel = COS;
         break;
     case TAN:
         if(!isnan(v)){
-            sprintf(s->exp, "%f", tan(v));
+            sprintf(expr, "%f", tan(v));
             break;
         }
-        sprintf(s->exp, "tan(%s)", c->exp);
-        s->rel = TAN;
+        sprintf(expr, "tan(%s)", c->exp);
+        // s->rel = TAN;
         break;
     default:
         break;
     }
-    s->exp = realloc(s->exp, strlen(s->exp)+1);
-    return s;
+    expr = realloc(expr, strlen(expr)+1);
+    return mapear_func(expr, c->var);
 }
 
 static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationType rel){
     char *expr = malloc(expr_len *sizeof *expr);
-    Func *s = criar_func(c1->var, expr);
-    s->rel = DESCONHECIDO;
+    // Func *s = criar_func(c1->var, expr);
+    // s->rel = DESCONHECIDO;
 
     double v1 = 0.0, v2 = 0.0;
     v1 = is_number(c1); v2 = is_number(c2);
@@ -390,54 +390,54 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
     {
     case SOMA:
         if(!isnan(v1) && !isnan(v2)){
-            sprintf(s->exp, "%f", v1+v2);
+            sprintf(expr, "%f", v1+v2);
             break;
         }
         else if(isnan(v1)){
             if(v2 == 0.0){
-                sprintf(s->exp, "%s", c1->exp);
+                sprintf(expr, "%s", c1->exp);
                 break;
             }
         }
         else if(isnan(v2)){
             if(v1 == 0.0){
-                sprintf(s->exp, "%s", c2->exp);
+                sprintf(expr, "%s", c2->exp);
                 break;
             }
         }
-        sprintf(s->exp, "(%s)+(%s)", c1->exp, c2->exp);
-        adicionar_filho(s, c1);
-        adicionar_filho(s, c2);
-        s->rel = SOMA;
+        sprintf(expr, "(%s)+(%s)", c1->exp, c2->exp);
+        // adicionar_filho(s, c1);
+        // adicionar_filho(s, c2);
+        // s->rel = SOMA;
         break;
     case SUB:
         if(!isnan(v1) && !isnan(v2)){ // ambos números
-            sprintf(s->exp, "%f", v1-v2);
+            sprintf(expr, "%f", v1-v2);
             break;
         }
         else if(isnan(v1)){ // v1 é x
             
             if(v2 == 0.0){ // v2 é 0
-                sprintf(s->exp, "%s", c1->exp);
+                sprintf(expr, "%s", c1->exp);
                 break;
             }else if(!isnan(v2)) { // v2 é número
 
-                sprintf(s->exp, "(%s)-(%f)", c1->exp, v2);
-                adicionar_filho(s, c1);
-                adicionar_filho(s, c2);
-                s->rel = SUB;
+                sprintf(expr, "(%s)-(%f)", c1->exp, v2);
+                // adicionar_filho(s, c1);
+                // adicionar_filho(s, c2);
+                // s->rel = SUB;
                 break;
             }
         }
         else if(isnan(v2)){
             if(v1 == 0.0){
-                sprintf(s->exp, "-%s", c2->exp);
+                sprintf(expr, "-%s", c2->exp);
                 break;
             }else if(!isnan(v1)) {
-                sprintf(s->exp, "(%f)-(%s)", v1, c2->exp);
-                adicionar_filho(s, c1);
-                adicionar_filho(s, c2);
-                s->rel = SUB;
+                sprintf(expr, "(%f)-(%s)", v1, c2->exp);
+                // adicionar_filho(s, c1);
+                // adicionar_filho(s, c2);
+                // s->rel = SUB;
                 break;
             }
         }
@@ -445,106 +445,106 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
         if((c1->num_children == 0 && c2->num_children == 0) || arvores_sao_iguais(c1,c2)) {
             // fazer func pra comparar arvores
             // temos q simplificar (x+2)-(x+2) por exemplo
-            sprintf(s->exp, "%f", 0.0);
+            sprintf(expr, "%f", 0.0);
         }
         else {
-            sprintf(s->exp, "(%s)-(%s)", c1->exp, c2->exp);
-            adicionar_filho(s, c1);
-            adicionar_filho(s, c2);
-            s->rel = SUB;
+            sprintf(expr, "(%s)-(%s)", c1->exp, c2->exp);
+            // adicionar_filho(s, c1);
+            // adicionar_filho(s, c2);
+            // s->rel = SUB;
         }
         break;
     case MULT:
         if(!isnan(v1) && !isnan(v2)){ // ambos números
-            sprintf(s->exp, "%f", v1*v2);
+            sprintf(expr, "%f", v1*v2);
             break;
         }
         else if(isnan(v1)){
             if(v2 == 0.0){
-                sprintf(s->exp, "%f", 0.0);
+                sprintf(expr, "%f", 0.0);
                 break;
             }else if(v2 == 1.0){
-                sprintf(s->exp, "%s", c1->exp);
+                sprintf(expr, "%s", c1->exp);
                 break;
             }
         }else if(isnan(v2)){
             if(v1 == 0.0){
-                sprintf(s->exp, "%f", 0.0);
+                sprintf(expr, "%f", 0.0);
                 break;
             }else if(v1 == 1.0){
-                sprintf(s->exp, "%s", c2->exp);
+                sprintf(expr, "%s", c2->exp);
                 break;
             }
         }
-        sprintf(s->exp, "(%s)*(%s)", c1->exp, c2->exp);
-        adicionar_filho(s, c1);
-        adicionar_filho(s, c2);
-        s->rel = MULT;
+        sprintf(expr, "(%s)*(%s)", c1->exp, c2->exp);
+        // adicionar_filho(s, c1);
+        // adicionar_filho(s, c2);
+        // s->rel = MULT;
         break;
     case DIV:
         if(!isnan(v1) && !isnan(v2)){
             if(v1 == 0.0 && v2 != 0.0){
-                sprintf(s->exp, "%f", 0.0);
+                sprintf(expr, "%f", 0.0);
 
                 break;
             }else if(v1 != 0.0 && v2 != 0.0){
-                sprintf(s->exp, "%f", v1/v2);
+                sprintf(expr, "%f", v1/v2);
 
                 break;
             }
         }
         else if(isnan(v1)){
             if(v2 == 1.0){
-                sprintf(s->exp, "%s", c1->exp);
+                sprintf(expr, "%s", c1->exp);
 
                 break;
             }
         }else if(isnan(v2)){
             if(v1 == 0.0){
-                sprintf(s->exp, "%f", 0.0);
+                sprintf(expr, "%f", 0.0);
                 break;
             }
         }
         if((c1->num_children == 0 && c2->num_children == 0) || arvores_sao_iguais(c1, c2)){ // fazer func pra comparar arvores
             // temos q simplificar (x+2)/(x+2) por exemplo
-            sprintf(s->exp, "%f", 1.0);
+            sprintf(expr, "%f", 1.0);
             break;
         }
-        sprintf(s->exp, "(%s)/(%s)", c1->exp, c2->exp);
-        adicionar_filho(s, c1);
-        adicionar_filho(s, c2);
-        s->rel = DIV;
+        sprintf(expr, "(%s)/(%s)", c1->exp, c2->exp);
+        // adicionar_filho(s, c1);
+        // adicionar_filho(s, c2);
+        // s->rel = DIV;
         break;
     case POT:
         if(!isnan(v1) && !isnan(v2)){
-            sprintf(s->exp, "%f", pow(v1,v2));
+            sprintf(expr, "%f", pow(v1,v2));
             break;
         }else if(isnan(v1)){
             if(v2 == 0.0){
-                sprintf(s->exp, "%f", 1.0);
+                sprintf(expr, "%f", 1.0);
                 break;
             }else if(v2 == 1.0){
-                sprintf(s->exp, "%s", c1->exp);
+                sprintf(expr, "%s", c1->exp);
                 break;
             }
         }else if(isnan(v2)){
             if(v1 == 1.0){
-                sprintf(s->exp, "%f", 1.0);
+                sprintf(expr, "%f", 1.0);
                 break;
             }
         }
 
-        sprintf(s->exp, "(%s)^(%s)", c1->exp, c2->exp);
-        adicionar_filho(s, c1);
-        adicionar_filho(s, c2);
-        s->rel = POT;
+        sprintf(expr, "(%s)^(%s)", c1->exp, c2->exp);
+        // adicionar_filho(s, c1);
+        // adicionar_filho(s, c2);
+        // s->rel = POT;
         break;
     default:
         break;
     }
-    s->exp = realloc(s->exp, strlen(s->exp)+1);
+    expr = realloc(expr, strlen(expr)+1);
     
-    return s;
+    return mapear_func(expr, c1->var);
 }
 
 /* 
@@ -633,6 +633,8 @@ double avaliar_func(const Func *f, double x){
     if(f == NULL) return NAN;
 
     if(f->num_children == 0){
+        // retirar_parenteses(f);
+        // printf("\n%s", f->exp);
         if(f->exp[0] == f->var && f->exp[1] == '\0') return x;
         if(f->exp[0] == '-' && f->exp[1] == f->var &&  f->exp[2] == '\0') return -x;
         if(f->exp[0] == '+' && f->exp[1] == f->var &&  f->exp[2] == '\0') return x;
