@@ -76,8 +76,8 @@ void testar_mapear_func() {
     printf("->Teste 2 OK\n");
 
     /* Teste 1.3 */
-    char *expr3 = alocar_string(NULL);
-    Func *f3_null = mapear_func(expr3, 'x');
+    // char *expr3 = alocar_string(NULL);
+    Func *f3_null = mapear_func(NULL, 'x');
 
     assert(f3_null == NULL);
     printf("->Teste 3.1 OK\n");
