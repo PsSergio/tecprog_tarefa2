@@ -570,7 +570,13 @@ void liberar_func(Func *f){
 
 }
 
-
+/* 
+ @brief Simplifica uma equação mapeada com base em regras matemáticas básicas
+ @param f Função mapeada a ser simplificada
+ @return Retorna a nova função simplificada, também mapeada
+ @note A função não libera Func f
+ @note Caso a Func f não possa ser simplificada, a função retorna uma cópia
+*/
 Func* simplificar_func(const Func *f){
     if(f == NULL) return NULL;
     
