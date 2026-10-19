@@ -13,7 +13,7 @@ void testar_derivar_func(void) {
     printf("[Módulo 2] Executando testes de derivar_func...\n");
 
     /* Teste 1.1: Polinômio padrão (x^3 -> 3*x^2). Para x = 2: 3*(4) = 12.0 */
-    Func *f1 = mapear_func(alocar_string("x^3"), 'x');
+    Func *f1 = mapear_func("x^3", 'x');
     assert(f1 != NULL);
     Func *df1 = derivar_func(f1, 'x');
     assert(df1 != NULL);
@@ -22,7 +22,7 @@ void testar_derivar_func(void) {
     liberar_func(df1);
 
     /* Teste 1.2: Função elementar (sen(x) -> cos(x)). Para x = 0: cos(0) = 1.0 */
-    Func *f2 = mapear_func(alocar_string("sen(x)"), 'x');
+    Func *f2 = mapear_func("sen(x)", 'x');
     assert(f2 != NULL);
     Func *df2 = derivar_func(f2, 'x');
     assert(df2 != NULL);
@@ -31,7 +31,7 @@ void testar_derivar_func(void) {
     liberar_func(df2);
 
     /* Teste 1.3: Derivação parcial em relação a outra variável (x^2 rel a y -> 0) */
-    Func *f3 = mapear_func(alocar_string("x^2"), 'x');
+    Func *f3 = mapear_func("x^2", 'x');
     assert(f3 != NULL);
     Func *df3 = derivar_func(f3, 'y');
     assert(df3 != NULL);
@@ -53,7 +53,7 @@ void testar_reta_tangente_func(void) {
     printf("[Módulo 2] Executando testes de reta_tangente_func...\n");
 
     /* Teste 2.1: Caso nominal do TP2 (x^2 em x0 = 2 -> y = 4*x - 4) */
-    Func *f1 = mapear_func(alocar_string("x^2"), 'x');
+    Func *f1 = mapear_func("x^2", 'x');
     assert(f1 != NULL);
     Func *tangente1 = reta_tangente_func(f1, 2.0);
     assert(tangente1 != NULL);
@@ -65,7 +65,7 @@ void testar_reta_tangente_func(void) {
     liberar_func(tangente1);
 
     /* Teste 2.2: Reta tangente horizontal (x^2 em x0 = 0 -> y = 0) */
-    Func *f2 = mapear_func(alocar_string("x^2"), 'x');
+    Func *f2 = mapear_func("x^2", 'x');
     assert(f2 != NULL);
     Func *tangente2 = reta_tangente_func(f2, 0.0);
     assert(tangente2 != NULL);
@@ -75,7 +75,7 @@ void testar_reta_tangente_func(void) {
     liberar_func(tangente2);
 
     /* Teste 2.3: Ponto fora do domínio / assíntota (1/x em x0 = 0) */
-    Func *f3 = mapear_func(alocar_string("1 / x"), 'x');
+    Func *f3 = mapear_func("1 / x", 'x');
     assert(f3 != NULL);
     Func *tangente3 = reta_tangente_func(f3, 0.0);
     if (tangente3 != NULL) {

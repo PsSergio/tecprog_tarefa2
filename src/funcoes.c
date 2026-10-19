@@ -8,7 +8,7 @@
 #include <string.h>
 #include "../include/utils.h"
 
-#define expr_len 1024
+#define expr_len 50000
 
 /* 
 FUNÇÕES INTERNAS
@@ -18,7 +18,7 @@ static char* remover_espacos(char *expr) {
     if (!expr) return NULL;
 
     size_t len = strlen(expr);
-    char *sem_espacos = (char *)malloc(len + 1);
+    char *sem_espacos = (char *)malloc((len + 1) * sizeof *sem_espacos);
     if (!sem_espacos) return NULL;
 
     size_t j = 0;
@@ -105,6 +105,12 @@ static void retirar_parenteses(Func *f){
 
 }
 
+/* 
+ @brief cria uma estrutura Func
+ @param var atributo var de Func
+ @param exp atributo exp de Func
+ @note o parâmetro exp PRECISA estar alocado na heap
+*/
 Func* criar_func(char var, char* exp){
 
     Func *f = malloc(sizeof(*f));
@@ -324,7 +330,9 @@ static Func* simplificar_func_uni(Func *c, enum RelationType rel){
         break;
     }
     expr = realloc(expr, strlen(expr)+1);
-    return mapear_func(expr, c->var);
+    Func *sf = mapear_func(expr, c->var);
+    free(expr);
+    return sf;
 }
 
 static Func* simplificar_func_bi(Func *c1, Func *c2, enum RelationType rel){
@@ -493,7 +501,9 @@ static Func* simplificar_func_bi(Func *c1, Func *c2, enum RelationType rel){
     }
     expr = realloc(expr, strlen(expr)+1);
     
-    return mapear_func(expr, c1->var);
+    Func *sf = mapear_func(expr, c1->var);
+    free(expr);
+    return sf;
 }
 
 /* 
@@ -514,7 +524,7 @@ Func* mapear_func(char *expr, char var){
     char *expr_limpa = remover_espacos(expr);
     if (!expr_limpa) return NULL;
 
-    free(expr);
+    // free(expr);
 
     Func *f = criar_func(var, expr_limpa);
 

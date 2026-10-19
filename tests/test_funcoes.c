@@ -13,27 +13,27 @@ void testar_avaliar_func(void) {
     printf("[Módulo 1] Executando testes de avaliar_func...\n");
 
     /* Teste 4.1: Avaliação regular de polinômio */
-    Func *f1 = mapear_func(alocar_string("3*x^2 - 5*x + 2"), 'x');
+    Func *f1 = mapear_func("3*x^2 - 5*x + 2", 'x');
     assert(f1 != NULL);
 
     assert(fabs(avaliar_func(f1, 2.0) - 4.0) < 1e-9);
     liberar_func(f1);
 
     /* Teste 4.2: Assíntota vertical (divisão por zero c/0) -> INFINITY */
-    Func *f2 = mapear_func(alocar_string("1 / x"), 'x');
+    Func *f2 = mapear_func("1 / x", 'x');
     assert(f2 != NULL);
     double res2 = avaliar_func(f2, 0.0);
     assert(isinf(res2));
     liberar_func(f2);
 
     /* Teste 4.3: Forma indeterminada 0/0 -> NAN */
-    Func *f3 = mapear_func(alocar_string("sen(x) / x"), 'x');
+    Func *f3 = mapear_func("sen(x) / x", 'x');
     assert(f3 != NULL);
     double res3 = avaliar_func(f3, 0.0);
     assert(isnan(res3));
     liberar_func(f3);
 
-    Func *f = mapear_func(alocar_string("x^2"), 'x');
+    Func *f = mapear_func("x^2", 'x');
     assert(f != NULL);
     double resultado = avaliar_func(f, 3);
     assert(fabs(resultado - 9.0) < 1e-9);
@@ -47,13 +47,13 @@ void testar_mapear_func(void) {
     printf("[Módulo 1] Executando testes de mapear_func...\n");
 
     /* Teste 1.1 */
-    char *expr1 = alocar_string("3*x^2 - 5*x + 2");
+    char *expr1 = "3*x^2 - 5*x + 2";
     Func *f1 = mapear_func(expr1, 'x');
     assert(f1 != NULL);
     liberar_func(f1);
 
     /* Teste 1.2 */
-    char *expr2 = alocar_string("sen(x) + 3*x^2");
+    char *expr2 = "sen(x) + 3*x^2";
     Func *f2 = mapear_func(expr2, 'x');
     assert(f2 != NULL);
     liberar_func(f2);
@@ -64,7 +64,7 @@ void testar_mapear_func(void) {
 
     assert(f3_null == NULL);
     
-    char *expr3v = alocar_string("");
+    char *expr3v = "";
     Func *f3_vazia = mapear_func(expr3v, 'x');
     assert(f3_vazia == NULL);
     
@@ -76,7 +76,7 @@ void testar_simplificar_func(void) {
     printf("[Módulo 1] Executando testes de simplificar_func...\n");
 
     /* Teste 3.1: */
-    Func *f1 = mapear_func(alocar_string("x * 0 + 1 * x"), 'x');
+    Func *f1 = mapear_func("x * 0 + 1 * x", 'x');
     assert(f1 != NULL);
     Func *s1 = simplificar_func(f1);
     assert(s1 != NULL);
@@ -85,7 +85,7 @@ void testar_simplificar_func(void) {
     liberar_func(s1);
     
     /* Teste 3.2:  */
-    Func *f2 = mapear_func(alocar_string("2 + 3 * 4"), 'x');
+    Func *f2 = mapear_func("2 + 3 * 4", 'x');
     assert(f2 != NULL);
     Func *s2 = simplificar_func(f2);
     assert(s2 != NULL);
@@ -94,7 +94,7 @@ void testar_simplificar_func(void) {
     liberar_func(s2);
     
     /* Teste 3.3: Regra de potência (u^0 -> 1) */
-    Func *f3 = mapear_func(alocar_string("(x + 5)^0"), 'x');
+    Func *f3 = mapear_func("(x + 5)^0", 'x');
     assert(f3 != NULL);
     Func *s3 = simplificar_func(f3);
     assert(s3 != NULL);
@@ -103,7 +103,7 @@ void testar_simplificar_func(void) {
     liberar_func(s3);
     
     /* Teste 3.4: Cancelamento de termos idênticos (x - x -> 0) */
-    Func *f4 = mapear_func(alocar_string("x - x"), 'x');
+    Func *f4 = mapear_func("x - x", 'x');
     assert(f4 != NULL);
     Func *s4 = simplificar_func(f4);
     assert(s4 != NULL);

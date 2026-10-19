@@ -14,7 +14,7 @@ void testar_limite_func(void) {
     printf("[Módulo 3] Executando testes de limite_func...\n");
 
     /* Teste 1.1: Polinômio por substituição direta (3*x^2 - 5*x + 2 quando x -> 2: 4.0) */
-    Func *f1 = mapear_func(alocar_string("3*x^2 - 5*x + 2"), 'x');
+    Func *f1 = mapear_func("3*x^2 - 5*x + 2", 'x');
     assert(f1 != NULL);
     Func *lim1 = limite_func(f1, 'x', 2.0, BOTH);
     assert(lim1 != NULL);
@@ -23,7 +23,7 @@ void testar_limite_func(void) {
     liberar_func(lim1);
 
     /* Teste 1.2: L'Hôpital obrigatório do TP2 (sen(x) / x quando x -> 0: 1.0) */
-    Func *f2 = mapear_func(alocar_string("sen(x) / x"), 'x');
+    Func *f2 = mapear_func("sen(x) / x", 'x');
     assert(f2 != NULL);
     Func *lim2 = limite_func(f2, 'x', 0.0, BOTH);
     assert(lim2 != NULL);
@@ -32,7 +32,7 @@ void testar_limite_func(void) {
     liberar_func(lim2);
 
     /* Teste 1.3: Quociente com indeterminação 0/0 ((x^2 - 4)/(x - 2) quando x -> 2: 4.0) */
-    Func *f3 = mapear_func(alocar_string("(x^2 - 4) / (x - 2)"), 'x');
+    Func *f3 = mapear_func("(x^2 - 4) / (x - 2)", 'x');
     assert(f3 != NULL);
     Func *lim3 = limite_func(f3, 'x', 2.0, BOTH);
     assert(lim3 != NULL);
@@ -51,19 +51,19 @@ void testar_func_continua_em(void) {
     printf("[Módulo 3] Executando testes de func_continua_em...\n");
 
     /* Teste 2.1: Função contínua em todo o domínio */
-    Func *f1 = mapear_func(alocar_string("3*x^2 - 5*x + 2"), 'x');
+    Func *f1 = mapear_func("3*x^2 - 5*x + 2", 'x');
     assert(f1 != NULL);
     assert(func_continua_em(f1, 2.0) == true);
     liberar_func(f1);
 
     /* Teste 2.2: Descontinuidade essencial / assíntota vertical (1/x em x0 = 0) */
-    Func *f2 = mapear_func(alocar_string("1 / x"), 'x');
+    Func *f2 = mapear_func("1 / x", 'x');
     assert(f2 != NULL);
     assert(func_continua_em(f2, 0.0) == false);
     liberar_func(f2);
 
     /* Teste 2.3: Descontinuidade removível / 0/0 (sen(x)/x em x0 = 0 não tem f(0) definida) */
-    Func *f3 = mapear_func(alocar_string("sen(x) / x"), 'x');
+    Func *f3 = mapear_func("sen(x) / x", 'x');
     assert(f3 != NULL);
     assert(func_continua_em(f3, 0.0) == false);
     liberar_func(f3);

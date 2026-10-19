@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define expr_len 1024
+#define expr_len 50000
 #define EPSILON_X 1e-7   // Distância x0 para aproximação dos limites
 #define TOLERANCIA 1e-4  // Tolerância para comparar se dois valores double são iguais
 
@@ -20,7 +20,9 @@ Func* limite_func(Func *f, char var, double target, enum LimitSide side) {
         sprintf(expr, "%f", a);
         expr = realloc(expr, strlen(expr)+1);
 
-        return mapear_func(expr, s1_f->var);
+        Func *r = mapear_func(expr, s1_f->var);
+        free(expr);
+        return r;
     }
 
     // nao é um número - inf ou nan
@@ -45,6 +47,7 @@ Func* limite_func(Func *f, char var, double target, enum LimitSide side) {
 
         Func *r = limite_func(s_f, var, target, side);
         liberar_func(s_f);
+        free(expr);
         return r;
 
     }   
@@ -72,7 +75,10 @@ Func* limite_func(Func *f, char var, double target, enum LimitSide side) {
     if(a > 0) sprintf(expr, "+inf");
     else if(a < 0) sprintf(expr, "-inf");
     else sprintf(expr, "%f", a);
-    return mapear_func(expr, f->var);
+    Func *r = mapear_func(expr, f->var);
+    free(expr);
+
+    return r;
 
 }
 

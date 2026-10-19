@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 
-#define expr_len 1024
+#define expr_len 50000
 
 // static void printFunc(Func *f){
 //     printf("Var: %c\n", f->var);
@@ -59,7 +59,7 @@ Func* derivar_func(Func *f, char var){
             sprintf(d->exp, "(%s+%s)", u_linha->exp, v_linha->exp);
             d->exp = realloc(d->exp, strlen(d->exp)+1);
             
-            Func *r = mapear_func(alocar_string(d->exp), d->var);
+            Func *r = mapear_func(d->exp, d->var);
             liberar_func(d);
 
             Func *s = simplificar_func(r);
@@ -79,7 +79,7 @@ Func* derivar_func(Func *f, char var){
             sprintf(d->exp, "(%s-%s)", u_linha->exp, v_linha->exp);
             d->exp = realloc(d->exp, strlen(d->exp)+1);
             
-            Func *r = mapear_func(alocar_string(d->exp), d->var);
+            Func *r = mapear_func(d->exp, d->var);
             liberar_func(d);
 
             Func *s = simplificar_func(r);
@@ -98,7 +98,7 @@ Func* derivar_func(Func *f, char var){
             sprintf(d->exp, "((%s)*(%s))+((%s)*(%s))", u_linha->exp, v->exp, u->exp, v_linha->exp);
             d->exp = realloc(d->exp, strlen(d->exp)+1);
             
-            Func *r = mapear_func(alocar_string(d->exp), d->var);
+            Func *r = mapear_func(d->exp, d->var);
 
             liberar_func(d);
 
@@ -119,7 +119,7 @@ Func* derivar_func(Func *f, char var){
             sprintf(d->exp, "(((%s)*(%s)-(%s)*(%s))/((%s)*(%s)))", u_linha->exp, v->exp, u->exp, v_linha->exp, v->exp, v->exp);
             d->exp = realloc(d->exp, strlen(d->exp)+1);
             
-            Func *r = mapear_func(alocar_string(d->exp), d->var);
+            Func *r = mapear_func(d->exp, d->var);
 
             liberar_func(d);
 
@@ -138,7 +138,7 @@ Func* derivar_func(Func *f, char var){
             sprintf(d->exp, "(cos(%s)*(%s))", u->exp, u_linha->exp);
             d->exp = realloc(d->exp, strlen(d->exp)+1);
             
-            Func *r = mapear_func(alocar_string(d->exp), d->var);
+            Func *r = mapear_func(d->exp, d->var);
 
             liberar_func(d);
 
@@ -156,7 +156,7 @@ Func* derivar_func(Func *f, char var){
             sprintf(d->exp, "((-1)*(sen(%s)*(%s)))", u->exp, u_linha->exp);
             d->exp = realloc(d->exp, strlen(d->exp)+1);
             
-            Func *r = mapear_func(alocar_string(d->exp), d->var);
+            Func *r = mapear_func(d->exp, d->var);
 
             liberar_func(d);
 
@@ -174,7 +174,7 @@ Func* derivar_func(Func *f, char var){
             sprintf(d->exp, "((%s)/((cos(%s))*(cos(%s))))", u_linha->exp, u->exp, u->exp);
             d->exp = realloc(d->exp, strlen(d->exp)+1);
             
-            Func *r = mapear_func(alocar_string(d->exp), d->var);
+            Func *r = mapear_func(d->exp, d->var);
 
             liberar_func(d);
 
@@ -199,7 +199,7 @@ Func* derivar_func(Func *f, char var){
             sprintf(d->exp, "((%s)*((%s)^(%s-1))*(%s))", a->exp, u->exp, a->exp, u_linha->exp);
             d->exp = realloc(d->exp, strlen(d->exp)+1);
             
-            Func *r = mapear_func(alocar_string(d->exp), d->var);
+            Func *r = mapear_func(d->exp, d->var);
 
             // printFunc(r);
 
