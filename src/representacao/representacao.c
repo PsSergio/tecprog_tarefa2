@@ -11,7 +11,7 @@
 #define HEIGHT 600
 #define SCALE 30.0
 
-double avaliar_func(const Func *f, double x);
+double avaliar_func(Func *f, double x);
 
 // Converte coordenadas matemáticas para pixels
 static Vector2 to_screen(double x, double y) {
@@ -21,7 +21,7 @@ static Vector2 to_screen(double x, double y) {
     return screen;
 }
 
-void draw_graph(const Func *f) {
+void draw_graph(Func *f) {
 
     // eixos cartesianos
     DrawLine(0, HEIGHT / 2, WIDTH, HEIGHT / 2, GRAY); // eixo x
@@ -63,7 +63,7 @@ void draw_graph(const Func *f) {
 }
 
 // funcao auxiliar
-static char* alocar_string(char *expr){
+char* alocar_string(char *expr){
 
     int i = 0;
     for(i = 0; expr[i] != '\0'; i++);
