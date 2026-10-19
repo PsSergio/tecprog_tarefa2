@@ -30,8 +30,6 @@ Func* limite_func(const Func *f, const char var, double target, enum LimitSide s
     if (f == NULL) return NULL;
     Func *s1_f = simplificar_func(f);
     
-    printf("%s\n", s1_f->exp);
-    
     double a = avaliar_func(s1_f, target);
     if(!isnan(a) && !isinf(a)){
         char *expr = malloc(expr_len * sizeof *expr);
@@ -98,6 +96,8 @@ Func* limite_func(const Func *f, const char var, double target, enum LimitSide s
 bool func_continua_em(const Func *f, double x0) {
     if (f == NULL) return false;
 
+    // Func é contínua se, e somente se limf = f(x0) quando x -> x0
+
     //Avalia o valor exato da função no ponto x0
     double val_fx0 = avaliar_func(f, x0);
 
@@ -107,29 +107,12 @@ bool func_continua_em(const Func *f, double x0) {
     }
 
     //Calcula os limites de aproximação pela esquerda (x0 - epsilon) e pela direita (x0 + epsilon)
-    double x_esquerda = x0 - EPSILON_X;
-    double x_direita  = x0 + EPSILON_X;
+    Func *lim_func = limite_func(f, f->var, x0, BOTH);
+    double val_lim = avaliar_func(f, x0);
 
-    double lim_esquerda = avaliar_func(f, x_esquerda);
-    double lim_direita  = avaliar_func(f, x_direita);
-
-    //Se algum dos limites laterais for indeterminado ou infinito
-    if (isnan(lim_esquerda) || isinf(lim_esquerda) ||
-        isnan(lim_direita)  || isinf(lim_direita)) {
-        return false;
-    }
-
-    //Verifica se os limites laterais coincidem entre si
-    if (fabs(lim_esquerda - lim_direita) > TOLERANCIA) {
-        return false; // Descontinuidade de salto ou essencial
-    }
-
-    //Média dos limites laterais para estimar o valor limite
-    double limite_estimado = (lim_esquerda + lim_direita) / 2.0;
-
-    //Verifica se o limite é igual ao valor f(x0)
-    if (fabs(limite_estimado - val_fx0) > TOLERANCIA) {
-        return false; // Descontinuidade removível
+    //Verifica se o limite é igual ao valor f(x0) com tolerância
+    if (fabs(val_lim - val_fx0) > TOLERANCIA) {
+        return false; 
     }
 
     return true; // A função é contínua em x0

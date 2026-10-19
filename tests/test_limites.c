@@ -49,7 +49,7 @@ void testar_limite_func(void) {
     liberar_func(lim3);
 
     /* Teste 1.4: Testando com ponteiro nulo */
-    Func *lim4_null1 = limite_func(NULL, "x", 0.0, BOTH);
+    Func *lim4_null1 = limite_func(NULL, 'x', 0.0, BOTH);
     assert(lim4_null1 == NULL);
 
     printf(" -> limite_func: 4 testes aprovados!\n");
@@ -86,7 +86,7 @@ void testar_func_continua_em(void) {
 int main() {
 
     testar_limite_func();
-    // testar_func_continua_em();
+    testar_func_continua_em();
 
     return 0;
 }
