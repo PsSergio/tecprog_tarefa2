@@ -10,23 +10,7 @@
 #define EPSILON_X 1e-7   // Distância x0 para aproximação dos limites
 #define TOLERANCIA 1e-4  // Tolerância para comparar se dois valores double são iguais
 
-static char* alocar_string(char *expr){
-
-    int i = 0;
-    for(i = 0; expr[i] != '\0'; i++);
-    char *new_expr = malloc((i+1)* sizeof *new_expr);
-
-    for(int j = 0; expr[j] != '\0'; j++){
-        new_expr[j] = expr[j];
-    }
-
-    new_expr[i] = '\0';
-
-    return new_expr;
-
-}
-
-Func* limite_func(const Func *f, const char var, double target, enum LimitSide side) {
+Func* limite_func(Func *f, char var, double target, enum LimitSide side) {
     if (f == NULL) return NULL;
     Func *s1_f = simplificar_func(f);
     
@@ -86,14 +70,14 @@ Func* limite_func(const Func *f, const char var, double target, enum LimitSide s
     char *expr = malloc(expr_len * sizeof *expr);
     
     if(a > 0) sprintf(expr, "+inf");
-    else if(a < 0) sprintf(expr, "-inf", a);
+    else if(a < 0) sprintf(expr, "-inf");
     else sprintf(expr, "%f", a);
     return mapear_func(expr, f->var);
 
 }
 
 
-bool func_continua_em(const Func *f, double x0) {
+bool func_continua_em(Func *f, double x0) {
     if (f == NULL) return false;
 
     // Func é contínua se, e somente se limf = f(x0) quando x -> x0
@@ -101,14 +85,14 @@ bool func_continua_em(const Func *f, double x0) {
     //Avalia o valor exato da função no ponto x0
     double val_fx0 = avaliar_func(f, x0);
 
-    //Se f(x0) for indeterminado ou infinito, a função não é contínua em x0
     if (isnan(val_fx0) || isinf(val_fx0)) {
         return false;
     }
 
-    //Calcula os limites de aproximação pela esquerda (x0 - epsilon) e pela direita (x0 + epsilon)
     Func *lim_func = limite_func(f, f->var, x0, BOTH);
-    double val_lim = avaliar_func(f, x0);
+    double val_lim = avaliar_func(lim_func, x0);
+
+    liberar_func(lim_func);
 
     //Verifica se o limite é igual ao valor f(x0) com tolerância
     if (fabs(val_lim - val_fx0) > TOLERANCIA) {
@@ -117,21 +101,3 @@ bool func_continua_em(const Func *f, double x0) {
 
     return true; // A função é contínua em x0
 }
-
-// int main(){
-
-//     // Func *f = mapear_func(alocar_string("(x^5+(x^3))/((x^5)+(x^2))"), 'x');
-//     Func *f = mapear_func(alocar_string("(x^5+x^3)/(x^5+x^2)"), 'x');
-//     Func *l = limite_func(f, f->var, +INFINITY, BOTH);
-
-//     if(l == NULL){
-//         printf("Nulo");
-//         liberar_func(f);
-//         return 0;
-//     }
-//     printf("%s", l->exp);
-
-//     liberar_func(f);
-//     liberar_func(l);
-
-// }

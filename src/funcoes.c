@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <string.h>
+#include "../include/utils.h"
 
 #define expr_len 1024
 
@@ -13,23 +14,7 @@
 FUNÇÕES INTERNAS
 */
 
-static char* alocar_string(char *expr){
-
-    int i = 0;
-    for(i = 0; expr[i] != '\0'; i++);
-    char *new_expr = malloc((i+1)* sizeof *new_expr);
-
-    for(int j = 0; expr[j] != '\0'; j++){
-        new_expr[j] = expr[j];
-    }
-
-    new_expr[i] = '\0';
-
-    return new_expr;
-
-}
-
-static char* remover_espacos(const char *expr) {
+static char* remover_espacos(char *expr) {
     if (!expr) return NULL;
 
     size_t len = strlen(expr);
@@ -47,7 +32,14 @@ static char* remover_espacos(const char *expr) {
     return sem_espacos;
 }
 
-
+static double is_number(Func *f){
+    char *fim = NULL;
+    if(f == NULL) return NAN;
+    double v = strtod(f->exp, &fim);
+    
+    if(fim == f->exp) return NAN;
+    return v;
+}
 
 /* 
  @brief limita uma string em um intervalo fechado-aberto [indice1, indice2)
@@ -75,27 +67,9 @@ static char* limitar_string(char *expr, int inicio, int fim){
     for(int i = inicio; i < fim; i++, c++){
         nova_expr[c] = expr[i];
     }
-    nova_expr[fim] = '\0';
+    nova_expr[c] = '\0';
     return nova_expr;
 
-}
-
-static char* juntar_strings(char *str1, char *str2){ // acho q pode melhorar a complexidade
-    int i, j;
-    for(i = 0; str1[i] != '\0'; i++);
-    for(j = 0; str2[j] != '\0'; j++);
-    int tamanho_f = i+j+1;
-    char* r = malloc(tamanho_f * sizeof *r);
-    for(int k = 0; k < str1[k] != '\0'; k++){
-        r[k] = str1[k];
-    }
-    for(int k = 0; k < str2[k] != '\0'; k++){
-        r[i+k] = str2[k];
-    }
-
-    r[i+j] = '\0';
-
-    return r;
 }
 
 static void retirar_parenteses(Func *f){
@@ -131,7 +105,7 @@ static void retirar_parenteses(Func *f){
 
 }
 
-Func* criar_func(char var, const char* exp){
+Func* criar_func(char var, char* exp){
 
     Func *f = malloc(sizeof(*f));
 
@@ -177,27 +151,6 @@ int adicionar_filho(Func *f, Func *child){
 
     return 0;
 }
-
-static void printFunc(Func *f){
-    printf("Var: %c\n", f->var);
-
-    for(int i = 0 ; f->exp[i] != '\0'; i++){
-        printf("%c", f->exp[i]);
-    }
-
-    printf("\n");
-
-    print_rel(f->rel);
-
-    printf("\nnc: %d\n--------------\n", f->num_children);
-
-    for(int i = 0; i < f->num_children; i++){
-        printFunc(f->children[i]);
-    }
-}
-
-
-
 
 /*
  @brief Busca grupos de expressões matemáticas seguindo as regras de associatividade e os adiciona em uma Func raiz
@@ -294,7 +247,7 @@ static void encontrar_filhos(Func *f){
 
 }   
 
-Func* clonar_func(const Func *f){
+Func* clonar_func(Func *f){
     
     char* expr = alocar_string(f->exp);
     Func *n_f = criar_func(f->var, expr);
@@ -309,16 +262,9 @@ Func* clonar_func(const Func *f){
     
 }
 
-static double is_number(Func *f){
-    char *fim = NULL;
-    if(f == NULL) return NAN;
-    double v = strtod(f->exp, &fim);
-    
-    if(fim == f->exp) return NAN;
-    return v;
-}
 
-static bool arvores_sao_iguais(const Func *c1, const Func *c2){
+
+static bool arvores_sao_iguais(Func *c1, Func *c2){
 
     if(c1 == NULL && c2 == NULL) return true;
     if(c1 == NULL || c2 == NULL) return false;
@@ -342,7 +288,7 @@ static bool arvores_sao_iguais(const Func *c1, const Func *c2){
 
 }
 
-static Func* simplificar_func_uni(const Func *c, enum RelationType rel){
+static Func* simplificar_func_uni(Func *c, enum RelationType rel){
     char *expr = malloc(expr_len *sizeof *expr);
 
     // Func *s = criar_func(c->var, expr);
@@ -381,7 +327,7 @@ static Func* simplificar_func_uni(const Func *c, enum RelationType rel){
     return mapear_func(expr, c->var);
 }
 
-static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationType rel){
+static Func* simplificar_func_bi(Func *c1, Func *c2, enum RelationType rel){
     char *expr = malloc(expr_len *sizeof *expr);
     // Func *s = criar_func(c1->var, expr);
     // s->rel = DESCONHECIDO;
@@ -606,20 +552,20 @@ void liberar_func(Func *f){
  @note A função não libera Func f
  @note Caso a Func f não possa ser simplificada, a função retorna uma cópia
 */
-Func* simplificar_func(const Func *f){
+Func* simplificar_func(Func *f){
     if(f == NULL) return NULL;
     
     if(f->num_children == 0){
         return clonar_func(f);
     }else if(f->num_children == 1){
 
-        const Func *c = simplificar_func(f->children[0]);
+        Func *c = simplificar_func(f->children[0]);
         return simplificar_func_uni(c, f->rel);
 
     }
 
-    const Func *c1 = simplificar_func(f->children[0]);
-    const Func *c2 = simplificar_func(f->children[1]);
+    Func *c1 = simplificar_func(f->children[0]);
+    Func *c2 = simplificar_func(f->children[1]);
     
     return simplificar_func_bi(c1, c2, f->rel);
     
@@ -632,16 +578,15 @@ Func* simplificar_func(const Func *f){
  @return Retorna o valor numérico calculado no ponto x
  @note O retorno pode ser numérico, NAN ou INFINITY
 */
-double avaliar_func(const Func *f, double x){
+double avaliar_func(Func *f, double x){
     if(f == NULL) return NAN;
 
     if(f->num_children == 0){
         // retirar_parenteses(f);
-        // printf("\n%s", f->exp);
         if(f->exp[0] == f->var && f->exp[1] == '\0') return x;
         if(f->exp[0] == '-' && f->exp[1] == f->var &&  f->exp[2] == '\0') return -x;
         if(f->exp[0] == '+' && f->exp[1] == f->var &&  f->exp[2] == '\0') return x;
-        double x3 = atof(f->exp);
+        double x3 = is_number(f);
         
         return x3;
     }

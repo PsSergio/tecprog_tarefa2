@@ -4,7 +4,7 @@
 CC       := gcc
 CFLAGS   := -Wall -Wextra -Werror -std=c99 -pedantic -Iinclude
 PICFLAGS := -fPIC
-LDFLAGS  := -lm
+LDFLAGS  := -lm -fsanitize=address
 
 #Diretórios de Instalação
 PREFIX   ?= /usr/local
@@ -76,6 +76,7 @@ test: $(LIB_DIR)/libcalc.a
 	@mkdir -p $(BIN_DIR)
 	$(CC) $(CFLAGS) tests/*.c -L$(LIB_DIR) -lcalc $(LDFLAGS) -o $(BIN_DIR)/test_runner
 	./$(BIN_DIR)/test_runner
+	
 
 #Instala bibliotecas e cabeçalhos
 install: all

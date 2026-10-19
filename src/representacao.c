@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "raylib.h"
+// #include "raylib.h"
 #include <math.h>
 #include <stdbool.h>
 
