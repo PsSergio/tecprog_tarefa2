@@ -41,4 +41,9 @@ int main (void){
 
     printf("Lim (%s) quando x-> 0.0 = %f\n\n", f->exp, avaliar_func(limite_0, 0.0));
 
+    liberar_func(f);
+    liberar_func(dfdx);
+    liberar_func(tangente_f);
+    liberar_func(limite_0);
+
 }

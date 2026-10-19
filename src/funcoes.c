@@ -72,6 +72,11 @@ static char* limitar_string(char *expr, int inicio, int fim){
 
 }
 
+/* 
+ @brief Retira parênteses desnecessários na expressão matemática da função f
+ @param f Função a ser analisada
+ @note Essa função modifica a expressão original de f. Caso não haja modificações, a expressão permanece a mesma
+*/
 static void retirar_parenteses(Func *f){
     char *expr = f->exp;
     int n = 0, i = 0;
@@ -253,6 +258,11 @@ static void encontrar_filhos(Func *f){
 
 }   
 
+/* 
+ @brief Clona uma nova função baseado na função f
+ @param f Função a ser clonada
+ @return Retorna uma nova alocação da função idêntica à função f
+*/
 Func* clonar_func(Func *f){
     
     char* expr = alocar_string(f->exp);
@@ -268,8 +278,12 @@ Func* clonar_func(Func *f){
     
 }
 
-
-
+/* 
+ @brief Verifica se duas árvores de grafos são iguais, comparando suas expressões
+ @param c1 Função mapeada do lado esquerdo
+ @param c2 Função mapeada do lado direito
+ @return Retorna true se as expressões matemáticas de c1 e c2 são iguais. Retorna false caso contrário
+*/
 static bool arvores_sao_iguais(Func *c1, Func *c2){
 
     if(c1 == NULL && c2 == NULL) return true;
@@ -294,6 +308,12 @@ static bool arvores_sao_iguais(Func *c1, Func *c2){
 
 }
 
+/* 
+ @brief Simplifica a função mapeada c
+ @param c Função mapeada única
+ @param rel Relação dentro de {SEN, COS, TAN}
+ @return Retorna a função simplificada
+*/
 static Func* simplificar_func_uni(Func *c, enum RelationType rel){
     char *expr = malloc(expr_len *sizeof *expr);
 
@@ -335,6 +355,13 @@ static Func* simplificar_func_uni(Func *c, enum RelationType rel){
     return sf;
 }
 
+/*
+ @brief Simplifica a relação entre as funções c1 e c2
+ @param c1 Função mapeada do lado esquerdo da relação 
+ @param c2 Função mapeada do lado direito da relação
+ @param rel Relação dentro de {SOMA, SUB, MULT, DIV, POT}
+ @return Retorna a função simplificada
+*/
 static Func* simplificar_func_bi(Func *c1, Func *c2, enum RelationType rel){
     char *expr = malloc(expr_len *sizeof *expr);
     // Func *s = criar_func(c1->var, expr);
@@ -615,27 +642,3 @@ double avaliar_func(Func *f, double x){
     double x3 = aplicar_relacao(x1, x2, f->rel);
     return x3;
 }
-
-
-
-/* 
-FUNÇÃO MAIN - TESTE
-*/
-/*
-int main(){
-
-    Func *f1 = mapear_func(alocar_string("x * 0 + 1 * x"), 'x');
-    
-    Func *s1 = simplificar_func(f1);
-    
-    double r = avaliar_func(s1, 5.0);
-
-    printf("%f", r);
-
-    liberar_func(f1);
-    liberar_func(s1);
-    printf("->Teste 1 OK\n");
-
-}
-
-*/

@@ -8,24 +8,12 @@
 
 #define expr_len 50000
 
-// static void printFunc(Func *f){
-//     printf("Var: %c\n", f->var);
-
-//     for(int i = 0 ; f->exp[i] != '\0'; i++){
-//         printf("%c", f->exp[i]);
-//     }
-
-//     printf("\n");
-
-//     print_rel(f->rel);
-
-//     printf("\nnc: %d\n--------------\n", f->num_children);
-
-//     for(int i = 0; i < f->num_children; i++){
-//         printFunc(f->children[i]);
-//     }
-// }
-
+/*
+ @brief Deriva uma função mapeada em relação à variável var
+ @param f Função mapeada a ser derivada
+ @param var Variável considerada na derivada
+ @return Retorna a nova função mapeada que representa a derivada de f
+*/
 Func* derivar_func(Func *f, char var){
     if (f == NULL) return NULL;
 
@@ -218,6 +206,13 @@ Func* derivar_func(Func *f, char var){
     return NULL;
 }
 
+
+/*
+ @brief Constrói a reta tangente da função f no ponto x0
+ @param f Função mapeada
+ @param x0 ponto a ser construído a reta tangente
+ @return Retorna a função que representa a reta tangente da função f no ponto x0
+*/
 Func* reta_tangente_func(Func *f, double x0){
     if(f == NULL) return NULL;
     
