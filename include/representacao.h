@@ -3,7 +3,7 @@
 
 #include "funcoes.h"
 
-void repr_func_terminal(const Func *f, double x_min, double x_max, int width, int height);
+void draw_graph(Func *f);
 int exportar_repr_func(const Func *f, double x_min, double x_max, int width, int height, const char *filename);
 
 #endif
