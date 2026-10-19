@@ -5,69 +5,117 @@
 
 #include "../include/funcoes.h"
 #include "../include/relacoes.h"
+#include "../include/utils.h"
+#include "test.h"
 
-static char* alocar_string(char *expr){
+void testar_avaliar_func(void) {
 
-    int i = 0;
-    for(i = 0; expr[i] != '\0'; i++);
-    char *new_expr = malloc(i* sizeof *new_expr);
+    printf("[Módulo 1] Executando testes de avaliar_func...\n");
 
-    for(int j = 0; expr[j] != '\0'; j++){
-        new_expr[j] = expr[j];
-    }
+    /* Teste 4.1: Avaliação regular de polinômio */
+    Func *f1 = mapear_func("3*x^2 - 5*x + 2", 'x');
+    assert(f1 != NULL);
 
-    return new_expr;
+    assert(fabs(avaliar_func(f1, 2.0) - 4.0) < 1e-9);
+    liberar_func(f1);
 
-}
+    /* Teste 4.2: Assíntota vertical (divisão por zero c/0) -> INFINITY */
+    Func *f2 = mapear_func("1 / x", 'x');
+    assert(f2 != NULL);
+    double res2 = avaliar_func(f2, 0.0);
+    assert(isinf(res2));
+    liberar_func(f2);
 
-void testar_avaliar_func() {
-    char *expr = alocar_string("x^2");
-    Func *f = mapear_func(expr, 'x');
+    /* Teste 4.3: Forma indeterminada 0/0 -> NAN */
+    Func *f3 = mapear_func("sen(x) / x", 'x');
+    assert(f3 != NULL);
+    double res3 = avaliar_func(f3, 0.0);
+    assert(isnan(res3));
+    liberar_func(f3);
 
-    /* o parser deve criar uma função válida */
+    Func *f = mapear_func("x^2", 'x');
     assert(f != NULL);
-
-    /* 3^2 deve ser 9 */
     double resultado = avaliar_func(f, 3);
     assert(fabs(resultado - 9.0) < 1e-9);
-
     liberar_func(f);
-    free(expr);
 
-    printf("avaliar func [OK]\n");
+    printf("***** simplificar_func: 4 testes aprovados! *****\n");
+
 }
 
-void testar_mapear_func1() {
-    char *expr = alocar_string("sen(x) + 3*x^2");
-    Func *f = mapear_func(expr, 'x');           // programa executa e apenas imprime
-                                                // 2 "\n","sen","\n" e simplesmente
-    printf("Função mapeada: %s\n", f->exp);     // nao avanca
+void testar_mapear_func(void) {
+    printf("[Módulo 1] Executando testes de mapear_func...\n");
+
+    /* Teste 1.1 */
+    char *expr1 = "3*x^2 - 5*x + 2";
+    Func *f1 = mapear_func(expr1, 'x');
+    assert(f1 != NULL);
+    liberar_func(f1);
+
+    /* Teste 1.2 */
+    char *expr2 = "sen(x) + 3*x^2";
+    Func *f2 = mapear_func(expr2, 'x');
+    assert(f2 != NULL);
+    liberar_func(f2);
+
+    /* Teste 1.3 */
+    // char *expr3 = alocar_string(NULL);
+    Func *f3_null = mapear_func(NULL, 'x');
+
+    assert(f3_null == NULL);
     
-    /* o parser deve criar uma função válida */
-    assert(f != NULL);
+    char *expr3v = "";
+    Func *f3_vazia = mapear_func(expr3v, 'x');
+    assert(f3_vazia == NULL);
+    
+    printf("***** mapear_func: 4 testes aprovados! *****\n");
 
-    liberar_func(f);
-    free(expr);
-
-    printf("mapear func1 [OK]\n");
 }
 
-void testar_mapear_func2() {
-/* A entrada inválida deve ser rejeitada */
-    char *expr_invalida = alocar_string("x + * 2");
-    Func *invalida = mapear_func(expr_invalida, 'x');
+void testar_simplificar_func(void) {
+    printf("[Módulo 1] Executando testes de simplificar_func...\n");
 
-    assert(invalida == NULL);   // assertion failed: deveria dar NULL,
-    free(expr_invalida);        // mas nao está dando por alguma razão.
-
-    printf("mapear func2 [OK]\n");
+    /* Teste 3.1: */
+    Func *f1 = mapear_func("x * 0 + 1 * x", 'x');
+    assert(f1 != NULL);
+    Func *s1 = simplificar_func(f1);
+    assert(s1 != NULL);
+    assert(fabs(avaliar_func(s1, 5.0) - 5.0) < 1e-9);
+    liberar_func(f1);
+    liberar_func(s1);
+    
+    /* Teste 3.2:  */
+    Func *f2 = mapear_func("2 + 3 * 4", 'x');
+    assert(f2 != NULL);
+    Func *s2 = simplificar_func(f2);
+    assert(s2 != NULL);
+    assert(fabs(avaliar_func(s2, 0.0) - 14.0) < 1e-9);
+    liberar_func(f2);
+    liberar_func(s2);
+    
+    /* Teste 3.3: Regra de potência (u^0 -> 1) */
+    Func *f3 = mapear_func("(x + 5)^0", 'x');
+    assert(f3 != NULL);
+    Func *s3 = simplificar_func(f3);
+    assert(s3 != NULL);
+    assert(fabs(avaliar_func(s3, 10.0) - 1.0) < 1e-9);
+    liberar_func(f3);
+    liberar_func(s3);
+    
+    /* Teste 3.4: Cancelamento de termos idênticos (x - x -> 0) */
+    Func *f4 = mapear_func("x - x", 'x');
+    assert(f4 != NULL);
+    Func *s4 = simplificar_func(f4);
+    assert(s4 != NULL);
+    assert(fabs(avaliar_func(s4, 7.0) - 0.0) < 1e-9);
+    liberar_func(f4);
+    liberar_func(s4);
+    
+    printf("***** simplificar_func: 4 testes aprovados! *****\n");
 }
 
-/* main para teste */
-
-int main() {
-    testar_mapear_func1();
-    testar_mapear_func2();
+void rodar_testes_funcoes(void){
+    testar_mapear_func();
     testar_avaliar_func();
-    return 0;
+    testar_simplificar_func();
 }

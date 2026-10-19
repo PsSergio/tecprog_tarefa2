@@ -1,9 +1,13 @@
 #ifndef DERIVADAS_H
 #define DERIVADAS_H
 
-#include "funcoes.h"
 
-Func* derivar_func(const Func *f, const char *var);
-Func* reta_tangente(const Func *f, const char *x0);
+#include "funcoes.h"
+#include <stdio.h>
+
+
+Func* derivar_func(Func *f, char var);
+
+Func* reta_tangente_func(Func *f, double x0);
 
 #endif
