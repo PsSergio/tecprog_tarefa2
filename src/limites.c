@@ -10,6 +10,15 @@
 #define EPSILON_X 1e-7   // Distância x0 para aproximação dos limites
 #define TOLERANCIA 1e-4  // Tolerância para comparar se dois valores double são iguais
 
+/* 
+ @brief Avalia o limite da função mapeada f
+ @param f Função mapeada a ser avaliada
+ @param var variável a ser considerada na avaliação do limite
+ @param target alvo quando var tende ao double target
+ @param side tipo do limite a ser avaliado (BOTH, LEFT, RIGHT)
+ @return retorna uma função mapeada que contém o resultado do limite.
+ @note A função retornada deve ser liberada por liberar_func
+*/
 Func* limite_func(Func *f, char var, double target, enum LimitSide side) {
     if (f == NULL) return NULL;
     Func *s1_f = simplificar_func(f);
@@ -82,7 +91,12 @@ Func* limite_func(Func *f, char var, double target, enum LimitSide side) {
 
 }
 
-
+/* 
+ @brief Verifica se a função mapeada é contínua no ponto x0
+ @param f Função a ser verificada
+ @param x0 Ponto a ser analisado
+ @return Retorna um valor booleano. Se for contínua, retorna true. Retorna false caso contrário
+*/
 bool func_continua_em(Func *f, double x0) {
     if (f == NULL) return false;
 
