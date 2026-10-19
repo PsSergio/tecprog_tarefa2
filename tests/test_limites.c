@@ -4,9 +4,9 @@
 #include <stdbool.h>
 #include <math.h>
 #include <assert.h>
-#include "funcoes.h"
-#include "derivadas.h"
-#include "limites.h"
+#include "../include/funcoes.h"
+#include "../include/derivadas.h"
+#include "../include/limites.h"
 
 /* Função auxiliar para alocação dinâmica da string */
 static char* alocar_string(const char *str) {
@@ -49,13 +49,8 @@ void testar_limite_func(void) {
     liberar_func(lim3);
 
     /* Teste 1.4: Testando com ponteiro nulo */
-    Func *lim4_null1 = limite_func(NULL, "x", 0.0, BOTH);
+    Func *lim4_null1 = limite_func(NULL, 'x', 0.0, BOTH);
     assert(lim4_null1 == NULL);
-
-    Func *f4 = mapear_func(alocar_string("x^2"), 'x');
-    Func *lim4_null2 = limite_func(f4, NULL, 0.0, BOTH);
-    assert(lim4_null2 == NULL);
-    liberar_func(f4);
 
     printf(" -> limite_func: 4 testes aprovados!\n");
 }

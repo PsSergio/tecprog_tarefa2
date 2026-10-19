@@ -7,7 +7,7 @@
 #include <math.h>
 #include <string.h>
 
-#define expr_len 256
+#define expr_len 1024
 
 /* 
 FUNÇÕES INTERNAS
@@ -61,7 +61,7 @@ static char* remover_espacos(const char *expr) {
 */
 static char* limitar_string(char *expr, int inicio, int fim){
 
-    int tamanho_vetor = fim-inicio; // por causa do \0 no final
+    int tamanho_vetor = fim-inicio+1; // por causa do \0 no final
 
     char *nova_expr = malloc(tamanho_vetor * sizeof *nova_expr);
 
@@ -75,7 +75,7 @@ static char* limitar_string(char *expr, int inicio, int fim){
     for(int i = inicio; i < fim; i++, c++){
         nova_expr[c] = expr[i];
     }
-
+    nova_expr[fim] = '\0';
     return nova_expr;
 
 }
@@ -84,7 +84,7 @@ static char* juntar_strings(char *str1, char *str2){ // acho q pode melhorar a c
     int i, j;
     for(i = 0; str1[i] != '\0'; i++);
     for(j = 0; str2[j] != '\0'; j++);
-    int tamanho_f = i+j;
+    int tamanho_f = i+j+1;
     char* r = malloc(tamanho_f * sizeof *r);
     for(int k = 0; k < str1[k] != '\0'; k++){
         r[k] = str1[k];
@@ -92,6 +92,8 @@ static char* juntar_strings(char *str1, char *str2){ // acho q pode melhorar a c
     for(int k = 0; k < str2[k] != '\0'; k++){
         r[i+k] = str2[k];
     }
+
+    r[i+j] = '\0';
 
     return r;
 }
@@ -218,7 +220,7 @@ static void encontrar_filhos(Func *f){
     
     char *expr = f->exp;
 
-    char *rel_tri = malloc(3*sizeof *rel_tri);
+    char *rel_tri = malloc(4*sizeof *rel_tri);
     
     for(tamanho_expr = 0; expr[tamanho_expr] != '\0'; tamanho_expr++);
 
@@ -242,6 +244,7 @@ static void encontrar_filhos(Func *f){
             if(expr[i-2] != 's' && expr[i-2] != 'c' && expr[i-2] != 't') continue;
 
             rel_tri[0] = expr[i-2]; rel_tri[1] = expr[i-1]; rel_tri[2] = expr[i];
+            rel_tri[3] = '\0';
             enum RelationType relt = identificar_rel(rel_tri);
             if(relt == SEN || relt == COS || relt == TAN){
                 rel_3 = i-2;
@@ -352,7 +355,7 @@ static Func* simplificar_func_uni(const Func *c, enum RelationType rel){
             sprintf(expr, "%f", sin(v));
             break;
         }
-        sprintf(expr, "sen(%s)", c->exp);
+        sprintf(expr, "(sen(%s))", c->exp);
         // s->rel = SEN;
         break;
     case COS:
@@ -360,7 +363,7 @@ static Func* simplificar_func_uni(const Func *c, enum RelationType rel){
             sprintf(expr, "%f", cos(v));
             break;
         }
-        sprintf(expr, "cos(%s)", c->exp);
+        sprintf(expr, "(cos(%s))", c->exp);
         // s->rel = COS;
         break;
     case TAN:
@@ -368,7 +371,7 @@ static Func* simplificar_func_uni(const Func *c, enum RelationType rel){
             sprintf(expr, "%f", tan(v));
             break;
         }
-        sprintf(expr, "tan(%s)", c->exp);
+        sprintf(expr, "(tan(%s))", c->exp);
         // s->rel = TAN;
         break;
     default:
@@ -405,7 +408,7 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
                 break;
             }
         }
-        sprintf(expr, "(%s)+(%s)", c1->exp, c2->exp);
+        sprintf(expr, "(%s+%s)", c1->exp, c2->exp);
         // adicionar_filho(s, c1);
         // adicionar_filho(s, c2);
         // s->rel = SOMA;
@@ -422,7 +425,7 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
                 break;
             }else if(!isnan(v2)) { // v2 é número
 
-                sprintf(expr, "(%s)-(%f)", c1->exp, v2);
+                sprintf(expr, "(%s-%f)", c1->exp, v2);
                 // adicionar_filho(s, c1);
                 // adicionar_filho(s, c2);
                 // s->rel = SUB;
@@ -431,10 +434,10 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
         }
         else if(isnan(v2)){
             if(v1 == 0.0){
-                sprintf(expr, "-%s", c2->exp);
+                sprintf(expr, "(-%s)", c2->exp);
                 break;
             }else if(!isnan(v1)) {
-                sprintf(expr, "(%f)-(%s)", v1, c2->exp);
+                sprintf(expr, "(%f-%s)", v1, c2->exp);
                 // adicionar_filho(s, c1);
                 // adicionar_filho(s, c2);
                 // s->rel = SUB;
@@ -448,7 +451,7 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
             sprintf(expr, "%f", 0.0);
         }
         else {
-            sprintf(expr, "(%s)-(%s)", c1->exp, c2->exp);
+            sprintf(expr, "(%s-%s)", c1->exp, c2->exp);
             // adicionar_filho(s, c1);
             // adicionar_filho(s, c2);
             // s->rel = SUB;
@@ -476,7 +479,7 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
                 break;
             }
         }
-        sprintf(expr, "(%s)*(%s)", c1->exp, c2->exp);
+        sprintf(expr, "((%s)*(%s))", c1->exp, c2->exp);
         // adicionar_filho(s, c1);
         // adicionar_filho(s, c2);
         // s->rel = MULT;
@@ -510,7 +513,7 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
             sprintf(expr, "%f", 1.0);
             break;
         }
-        sprintf(expr, "(%s)/(%s)", c1->exp, c2->exp);
+        sprintf(expr, "((%s)/(%s))", c1->exp, c2->exp);
         // adicionar_filho(s, c1);
         // adicionar_filho(s, c2);
         // s->rel = DIV;
@@ -534,7 +537,7 @@ static Func* simplificar_func_bi(const Func *c1, const Func *c2, enum RelationTy
             }
         }
 
-        sprintf(expr, "(%s)^(%s)", c1->exp, c2->exp);
+        sprintf(expr, "((%s)^(%s))", c1->exp, c2->exp);
         // adicionar_filho(s, c1);
         // adicionar_filho(s, c2);
         // s->rel = POT;
