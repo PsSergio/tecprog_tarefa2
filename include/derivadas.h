@@ -6,8 +6,8 @@
 #include <stdio.h>
 
 
-Func* derivar_func(const Func *f, const char *var);
+Func* derivar_func(Func *f, char var);
 
-Func* reta_tangente_func(const Func *f, double x0);
+Func* reta_tangente_func(Func *f, double x0);
 
 #endif

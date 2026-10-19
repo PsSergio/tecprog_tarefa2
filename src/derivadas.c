@@ -1,46 +1,32 @@
 #include "../include/funcoes.h"
 #include "../include/relacoes.h"
+#include "../include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
 #define expr_len 1024
-static char* alocar_string(char *expr){
 
-    int i = 0;
-    for(i = 0; expr[i] != '\0'; i++);
-    char *new_expr = malloc((i+1)* sizeof *new_expr);
+// static void printFunc(Func *f){
+//     printf("Var: %c\n", f->var);
 
-    for(int j = 0; expr[j] != '\0'; j++){
-        new_expr[j] = expr[j];
-    }
+//     for(int i = 0 ; f->exp[i] != '\0'; i++){
+//         printf("%c", f->exp[i]);
+//     }
 
-    new_expr[i] = '\0';
+//     printf("\n");
 
-    return new_expr;
+//     print_rel(f->rel);
 
-}
+//     printf("\nnc: %d\n--------------\n", f->num_children);
 
-static void printFunc(Func *f){
-    printf("Var: %c\n", f->var);
+//     for(int i = 0; i < f->num_children; i++){
+//         printFunc(f->children[i]);
+//     }
+// }
 
-    for(int i = 0 ; f->exp[i] != '\0'; i++){
-        printf("%c", f->exp[i]);
-    }
-
-    printf("\n");
-
-    print_rel(f->rel);
-
-    printf("\nnc: %d\n--------------\n", f->num_children);
-
-    for(int i = 0; i < f->num_children; i++){
-        printFunc(f->children[i]);
-    }
-}
-
-Func* derivar_func(const Func *f, const char var){
+Func* derivar_func(Func *f, char var){
     if (f == NULL) return NULL;
 
     if(f->num_children == 0){
@@ -185,7 +171,7 @@ Func* derivar_func(const Func *f, const char var){
 		
 		    Func *u_linha = derivar_func(u, var);
 		    
-            sprintf(d->exp, "((%s)/((cos(%s))*(cos(%s))))", u->exp, u_linha->exp);
+            sprintf(d->exp, "((%s)/((cos(%s))*(cos(%s))))", u_linha->exp, u->exp, u->exp);
             d->exp = realloc(d->exp, strlen(d->exp)+1);
             
             Func *r = mapear_func(alocar_string(d->exp), d->var);
@@ -232,7 +218,7 @@ Func* derivar_func(const Func *f, const char var){
     return NULL;
 }
 
-Func* reta_tangente_func(const Func *f, double x0){
+Func* reta_tangente_func(Func *f, double x0){
     if(f == NULL) return NULL;
     
     double y0 = avaliar_func(f, x0);

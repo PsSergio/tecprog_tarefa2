@@ -6,22 +6,10 @@
 #include <assert.h>
 #include "../include/funcoes.h"
 #include "../include/derivadas.h"
+#include "../include/utils.h"
+#include "test.h"
 
-static char* alocar_string(char *expr){
-
-    int i = 0;
-    for(i = 0; expr[i] != '\0'; i++);
-    char *new_expr = malloc(i* sizeof *new_expr);
-
-    for(int j = 0; expr[j] != '\0'; j++){
-        new_expr[j] = expr[j];
-    }
-
-    return new_expr;
-
-}
-
-void testar_derivar_func() {
+void testar_derivar_func(void) {
     printf("[Módulo 2] Executando testes de derivar_func...\n");
 
     /* Teste 1.1: Polinômio padrão (x^3 -> 3*x^2). Para x = 2: 3*(4) = 12.0 */
@@ -55,18 +43,13 @@ void testar_derivar_func() {
     Func *df4_null1 = derivar_func(NULL, 'x');
     assert(df4_null1 == NULL);
 
-    Func *f4 = mapear_func(alocar_string(""), 'x');
-    Func *df4_null2 = derivar_func(f4, NULL);
-    assert(df4_null2 == NULL);
-    liberar_func(f4);
-
     printf(" -> derivar_func: 4 testes aprovados!\n");
 }
 
 /* ========================================================================= */
 /* 2. TESTES PARA reta_tangente_func                                        */
 /* ========================================================================= */
-void testar_reta_tangente_func() {
+void testar_reta_tangente_func(void) {
     printf("[Módulo 2] Executando testes de reta_tangente_func...\n");
 
     /* Teste 2.1: Caso nominal do TP2 (x^2 em x0 = 2 -> y = 4*x - 4) */
@@ -111,10 +94,7 @@ void testar_reta_tangente_func() {
     printf(" -> reta_tangente_func: 4 testes aprovados!\n");
 }
 
-int main() {
-
+void rodar_testes_derivadas(void){
     testar_derivar_func();
     testar_reta_tangente_func();
-
-    return 0;
 }

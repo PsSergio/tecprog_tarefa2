@@ -7,16 +7,8 @@
 #include "../include/funcoes.h"
 #include "../include/derivadas.h"
 #include "../include/limites.h"
-
-/* Função auxiliar para alocação dinâmica da string */
-static char* alocar_string(const char *str) {
-    if (!str) return NULL;
-    char *copia = (char *)malloc(strlen(str) + 1);
-    if (copia) {
-        strcpy(copia, str);
-    }
-    return copia;
-}
+#include "../include/utils.h"
+#include "test.h"
 
 void testar_limite_func(void) {
     printf("[Módulo 3] Executando testes de limite_func...\n");
@@ -24,7 +16,7 @@ void testar_limite_func(void) {
     /* Teste 1.1: Polinômio por substituição direta (3*x^2 - 5*x + 2 quando x -> 2: 4.0) */
     Func *f1 = mapear_func(alocar_string("3*x^2 - 5*x + 2"), 'x');
     assert(f1 != NULL);
-    Func *lim1 = limite_func(f1, "x", 2.0, BOTH);
+    Func *lim1 = limite_func(f1, 'x', 2.0, BOTH);
     assert(lim1 != NULL);
     assert(fabs(avaliar_func(lim1, 0.0) - 4.0) < 1e-9);
     liberar_func(f1);
@@ -33,7 +25,7 @@ void testar_limite_func(void) {
     /* Teste 1.2: L'Hôpital obrigatório do TP2 (sen(x) / x quando x -> 0: 1.0) */
     Func *f2 = mapear_func(alocar_string("sen(x) / x"), 'x');
     assert(f2 != NULL);
-    Func *lim2 = limite_func(f2, "x", 0.0, BOTH);
+    Func *lim2 = limite_func(f2, 'x', 0.0, BOTH);
     assert(lim2 != NULL);
     assert(fabs(avaliar_func(lim2, 0.0) - 1.0) < 1e-9);
     liberar_func(f2);
@@ -42,7 +34,7 @@ void testar_limite_func(void) {
     /* Teste 1.3: Quociente com indeterminação 0/0 ((x^2 - 4)/(x - 2) quando x -> 2: 4.0) */
     Func *f3 = mapear_func(alocar_string("(x^2 - 4) / (x - 2)"), 'x');
     assert(f3 != NULL);
-    Func *lim3 = limite_func(f3, "x", 2.0, BOTH);
+    Func *lim3 = limite_func(f3, 'x', 2.0, BOTH);
     assert(lim3 != NULL);
     assert(fabs(avaliar_func(lim3, 0.0) - 4.0) < 1e-9);
     liberar_func(f3);
@@ -82,11 +74,7 @@ void testar_func_continua_em(void) {
     printf(" -> func_continua_em: 4 testes aprovados!\n");
 }
 
-
-int main() {
-
+void rodar_testes_limites(void){
     testar_limite_func();
     testar_func_continua_em();
-
-    return 0;
 }
