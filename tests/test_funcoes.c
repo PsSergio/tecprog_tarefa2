@@ -42,6 +42,7 @@ void testar_mapear_func1() {
     Func *f = mapear_func(expr, 'x');           // programa executa e apenas imprime
                                                 // 2 "\n","sen","\n" e simplesmente
     printf("Função mapeada: %s\n", f->exp);     // nao avanca
+    
     /* o parser deve criar uma função válida */
     assert(f != NULL);
 
